@@ -4,11 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TopVPN — быстрый доступ без ограничений</title>
-  <meta name="description" content="VPN на протоколе AmneziaWG 3.1. Стабильный доступ без блокировок. Оплата в Telegram, подключение за минуту." />
+  <meta name="description" content="VPN на протоколе AmneziaWG 3.1. Стабильный доступ без блокировок. Регистрация и управление на сайте." />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
     .hero-gradient { background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 55%, #1e40af 100%); }
+    .onboarding-choice { transition: border-color .15s, background .15s, color .15s, transform .15s; }
+    .onboarding-choice:hover { transform: translateY(-1px); border-color: #93c5fd; }
+    .onboarding-choice.active { border-color: #2563eb; background: #eff6ff; color: #1d4ed8; box-shadow: 0 0 0 1px #2563eb; }
+    .onboarding-choice:focus-visible { outline: 3px solid rgba(37,99,235,.25); outline-offset: 2px; }
   </style>
 </head>
 
@@ -33,10 +37,10 @@
         Быстрый доступ без ограничений
       </h1>
       <p class="text-xl mb-6 opacity-90">
-        Стабильный доступ без блокировок. Оплата и управление — в Telegram.
+        Стабильный доступ без блокировок. Регистрация и управление — на сайте.
       </p>
       <div class="flex flex-col md:flex-row justify-center gap-4">
-        <a href="/app/"
+        <a href="#registration"
            class="bg-white text-blue-700 font-bold px-10 py-4 rounded-2xl shadow-xl hover:scale-[1.02] transition">Подключить за минуту</a>
         <a href="#how" class="bg-blue-500/20 border border-blue-300 text-white font-bold px-10 py-4 rounded-2xl hover:bg-blue-500/35 transition">Как это работает</a>
       </div>
@@ -48,6 +52,68 @@
     </div>
   </header>
 
+  <section id="registration" class="py-8 md:py-12 px-6 scroll-mt-4">
+    <div class="container mx-auto max-w-4xl">
+      <div class="bg-white rounded-[32px] border border-slate-200 shadow-xl shadow-blue-900/5 p-6 md:p-9">
+        <div class="mb-7">
+          <div class="text-sm font-extrabold uppercase tracking-widest text-blue-600 mb-2">Регистрация</div>
+          <h2 class="text-3xl font-extrabold mb-3">Создайте подключение</h2>
+          <p class="text-slate-500">Придумайте имя аккаунта, выберите срок и устройство.</p>
+        </div>
+
+        <form id="registrationForm" novalidate>
+          <div class="mb-7">
+            <label for="siteUsername" class="block font-bold mb-2">Имя аккаунта</label>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">@</span>
+              <input id="siteUsername" type="text" autocomplete="username" spellcheck="false"
+                     minlength="3" maxlength="24" placeholder="username"
+                     class="w-full h-14 rounded-2xl border-2 border-slate-200 pl-10 pr-4 outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-100 transition"
+                     aria-describedby="siteUsernameHint" />
+            </div>
+            <div id="siteUsernameHint" class="min-h-5 mt-2 text-sm text-slate-500">3–24 символа: латинские буквы, цифры и знак _</div>
+          </div>
+
+          <fieldset class="mb-7">
+            <legend class="font-bold mb-3">Тариф</legend>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="registrationTariffs">
+              <button type="button" class="onboarding-choice rounded-2xl border-2 border-slate-200 p-4 text-left" data-months="1">
+                <span class="block text-sm text-slate-500">1 месяц</span><strong class="text-xl">500 ₽</strong>
+              </button>
+              <button type="button" class="onboarding-choice rounded-2xl border-2 border-slate-200 p-4 text-left" data-months="3">
+                <span class="block text-sm text-slate-500">3 месяца</span><strong class="text-xl">1350 ₽</strong>
+              </button>
+              <button type="button" class="onboarding-choice rounded-2xl border-2 border-slate-200 p-4 text-left" data-months="6">
+                <span class="block text-sm text-slate-500">6 месяцев</span><strong class="text-xl">2400 ₽</strong>
+              </button>
+              <button type="button" class="onboarding-choice rounded-2xl border-2 border-slate-200 p-4 text-left" data-months="12">
+                <span class="block text-sm text-slate-500">12 месяцев</span><strong class="text-xl">4200 ₽</strong>
+              </button>
+            </div>
+          </fieldset>
+
+          <fieldset class="mb-7">
+            <legend class="font-bold mb-3">Устройство</legend>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-3" id="registrationPlatforms">
+              <button type="button" class="onboarding-choice rounded-2xl border-2 border-slate-200 p-3 font-bold" data-platform="ios">📱 iPhone</button>
+              <button type="button" class="onboarding-choice rounded-2xl border-2 border-slate-200 p-3 font-bold" data-platform="android">🤖 Android</button>
+              <button type="button" class="onboarding-choice rounded-2xl border-2 border-slate-200 p-3 font-bold" data-platform="windows">🪟 Windows</button>
+              <button type="button" class="onboarding-choice rounded-2xl border-2 border-slate-200 p-3 font-bold" data-platform="macos">🍎 macOS</button>
+              <button type="button" class="onboarding-choice rounded-2xl border-2 border-slate-200 p-3 font-bold col-span-2 md:col-span-1" data-platform="linux">🐧 Linux</button>
+            </div>
+          </fieldset>
+
+          <div id="registrationMessage" class="hidden mb-4 rounded-2xl px-4 py-3 text-sm font-semibold" role="status"></div>
+          <button id="registrationSubmit" type="submit" disabled
+                  class="w-full h-14 rounded-2xl bg-blue-600 text-white font-extrabold disabled:opacity-45 disabled:cursor-not-allowed hover:bg-blue-700 transition">
+            Продолжить
+          </button>
+          <p class="text-xs text-slate-400 text-center mt-4">После регистрации откроется личный кабинет. Секретную ссылку нужно сохранить.</p>
+        </form>
+      </div>
+    </div>
+  </section>
+
   <section id="how" class="py-6 md:py-10 container mx-auto px-6">
     <div class="text-center mb-5">
       <h2 class="text-3xl font-bold mb-4">Как это работает</h2>
@@ -57,12 +123,12 @@
       <div class="p-6 bg-white rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition">
         <div class="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center text-3xl mb-4">💳</div>
         <h3 class="text-xl font-bold mb-3">Выберите тариф</h3>
-        <p class="text-slate-600 leading-relaxed">Откройте TopVPN в Telegram, выберите срок и устройство. Оплата через СБП.</p>
+        <p class="text-slate-600 leading-relaxed">Придумайте имя аккаунта, выберите срок и устройство прямо на сайте.</p>
       </div>
       <div class="p-6 bg-white rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition">
         <div class="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center text-3xl mb-4">📲</div>
         <h3 class="text-xl font-bold mb-3">Получите доступ</h3>
-        <p class="text-slate-600 leading-relaxed">Сразу после оплаты бот пришлёт ключ или файл настроек и подскажет, что делать дальше.</p>
+        <p class="text-slate-600 leading-relaxed">После оплаты конфигурация и инструкция появятся в личном кабинете.</p>
       </div>
       <div class="p-6 bg-white rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition">
         <div class="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center text-3xl mb-4">🚀</div>
@@ -79,7 +145,7 @@
     <div class="container mx-auto">
       <div class="text-center mb-5">
         <h2 class="text-3xl font-bold mb-4">Приложения</h2>
-        <p class="text-slate-500">Точную инструкцию под ваше устройство пришлёт бот после оплаты.</p>
+        <p class="text-slate-500">Точная инструкция под ваше устройство появится в личном кабинете.</p>
       </div>
 
       <div class="grid md:grid-cols-3 gap-5 max-w-6xl mx-auto">
@@ -87,7 +153,7 @@
           <div class="text-3xl mb-4">📱</div>
           <h3 class="text-xl font-extrabold mb-1">iPhone / iPad</h3>
           <div class="text-slate-500 mb-4">DefaultVPN</div>
-          <p class="text-slate-600 text-sm mb-6 flex-grow">Подключение ключом: скопировали из бота — вставили в приложение.</p>
+          <p class="text-slate-600 text-sm mb-6 flex-grow">Подключение ключом: скопируйте его из кабинета и вставьте в приложение.</p>
           <a class="w-full text-center py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition"
              href="https://apps.apple.com/app/defaultvpn/id6744725017" target="_blank" rel="noopener">App Store</a>
         </div>
@@ -96,7 +162,7 @@
           <div class="text-3xl mb-4">🤖</div>
           <h3 class="text-xl font-extrabold mb-1">Android</h3>
           <div class="text-slate-500 mb-4">AmneziaWG</div>
-          <p class="text-slate-600 text-sm mb-6 flex-grow">Откройте файл настроек из чата или отсканируйте QR-код.</p>
+          <p class="text-slate-600 text-sm mb-6 flex-grow">Откройте файл настроек из кабинета или отсканируйте QR-код.</p>
           <a class="w-full text-center py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition"
              href="https://play.google.com/store/apps/details?id=org.amnezia.awg" target="_blank" rel="noopener">Google Play</a>
         </div>
@@ -132,9 +198,9 @@
           <div class="text-3xl mb-4">💬</div>
           <h3 class="text-xl font-extrabold mb-1">Не знаете, что выбрать?</h3>
           <div class="text-slate-500 mb-4">Поможем</div>
-          <p class="text-slate-600 text-sm mb-6 flex-grow">Бот определит по вашему устройству и пришлёт готовую инструкцию.</p>
+          <p class="text-slate-600 text-sm mb-6 flex-grow">Выберите устройство при регистрации — кабинет покажет готовую инструкцию.</p>
           <a class="w-full text-center py-3 rounded-xl border-2 border-blue-600 text-blue-600 font-bold hover:bg-white transition"
-             href="/app/">Открыть TopVPN</a>
+             href="#registration">Открыть TopVPN</a>
         </div>
       </div>
     </div>
@@ -151,7 +217,7 @@
           <div class="text-4xl font-extrabold mb-1">500 ₽</div>
           <div class="text-slate-400 mb-5">500 ₽ в месяц</div>
           <a class="mt-auto w-full text-center py-3 rounded-xl border-2 border-blue-600 text-blue-600 font-bold hover:bg-blue-50 transition"
-             href="/app/">Выбрать</a>
+             href="#registration" data-registration-months="1">Выбрать</a>
         </div>
 
         <div class="p-6 rounded-3xl border-2 border-slate-100 bg-white flex flex-col hover:border-blue-300 hover:shadow-md transition">
@@ -159,7 +225,7 @@
           <div class="text-4xl font-extrabold mb-1">1350 ₽</div>
           <div class="text-slate-400 mb-5">450 ₽ в месяц · −10%</div>
           <a class="mt-auto w-full text-center py-3 rounded-xl border-2 border-blue-600 text-blue-600 font-bold hover:bg-blue-50 transition"
-             href="/app/">Выбрать</a>
+             href="#registration" data-registration-months="3">Выбрать</a>
         </div>
 
         <div class="p-6 rounded-3xl border-2 border-blue-600 bg-white flex flex-col relative shadow-lg hover:shadow-xl transition">
@@ -168,7 +234,7 @@
           <div class="text-4xl font-extrabold mb-1">2400 ₽</div>
           <div class="text-slate-400 mb-5">400 ₽ в месяц · −20%</div>
           <a class="mt-auto w-full text-center py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition"
-             href="/app/">Выбрать</a>
+             href="#registration" data-registration-months="6">Выбрать</a>
         </div>
 
         <div class="p-6 rounded-3xl border-2 border-slate-100 bg-white flex flex-col hover:border-blue-300 hover:shadow-md transition">
@@ -176,7 +242,7 @@
           <div class="text-4xl font-extrabold mb-1">4200 ₽</div>
           <div class="text-slate-400 mb-5">350 ₽ в месяц · −30%</div>
           <a class="mt-auto w-full text-center py-3 rounded-xl border-2 border-blue-600 text-blue-600 font-bold hover:bg-blue-50 transition"
-             href="/app/">Выбрать</a>
+             href="#registration" data-registration-months="12">Выбрать</a>
         </div>
       </div>
 
@@ -237,11 +303,11 @@
   <section id="contacts" class="py-6 md:py-10 px-6">
     <div class="container mx-auto max-w-3xl text-center">
       <h2 class="text-3xl font-bold mb-4">Контакты</h2>
-      <p class="text-slate-500 mb-6">Подключение, продление и поддержка — всё в Telegram.</p>
+      <p class="text-slate-500 mb-6">Подключение и продление — в кабинете. Поддержка остаётся в Telegram.</p>
 
       <div class="flex flex-col md:flex-row justify-center gap-4">
-        <a href="/app/"
-           class="bg-blue-600 text-white font-bold px-10 py-4 rounded-2xl hover:bg-blue-700 transition">Открыть TopVPN</a>
+        <a href="#registration"
+           class="bg-blue-600 text-white font-bold px-10 py-4 rounded-2xl hover:bg-blue-700 transition">Подключить TopVPN</a>
         <a href="https://t.me/GetTopVPN_bot?start=support" target="_blank" rel="noopener"
            class="border-2 border-blue-600 text-blue-600 font-bold px-10 py-4 rounded-2xl hover:bg-blue-50 transition">Написать в поддержку</a>
       </div>
@@ -260,5 +326,199 @@
       <p class="text-xs">TopVPN — сервис для свободного доступа в интернет.</p>
     </div>
   </footer>
+
+  <script>
+  (function () {
+    "use strict";
+
+    var API = "https://vpntop.duckdns.org/api/account/v1";
+    var TOKEN_KEY = "topvpn_account_token";
+    var NAME_KEY = "topvpn_account_username";
+    var usernameInput = document.getElementById("siteUsername");
+    var usernameHint = document.getElementById("siteUsernameHint");
+    var submitButton = document.getElementById("registrationSubmit");
+    var message = document.getElementById("registrationMessage");
+    var token = "";
+    var accountUsername = "";
+    var checkedUsername = "";
+    var selectedMonths = "";
+    var selectedPlatform = "";
+    var timer = 0;
+    var pendingCheck = null;
+
+    function normalizeUsername(value) {
+      return String(value || "").trim().toLowerCase();
+    }
+
+    function validUsername(value) {
+      return /^[a-z][a-z0-9_]{2,23}$/.test(value);
+    }
+
+    async function request(path, options) {
+      var response = await fetch(API + path, options || {});
+      var data = {};
+      try { data = await response.json(); } catch (_) {}
+      if (!response.ok) {
+        var error = new Error(data.message || data.error || "request_failed");
+        error.status = response.status;
+        error.code = data.error;
+        throw error;
+      }
+      return data;
+    }
+
+    function setHint(text, state) {
+      usernameHint.textContent = text;
+      usernameHint.className = "min-h-5 mt-2 text-sm " + (state === "success" ? "text-green-700" : state === "error" ? "text-red-600" : "text-slate-500");
+      usernameInput.setAttribute("aria-invalid", state === "error" ? "true" : "false");
+    }
+
+    function showMessage(text, state) {
+      message.textContent = text;
+      message.className = "mb-4 rounded-2xl px-4 py-3 text-sm font-semibold " +
+        (state === "error" ? "bg-red-50 text-red-700" : "bg-blue-50 text-blue-700");
+    }
+
+    function hideMessage() {
+      message.className = "hidden mb-4 rounded-2xl px-4 py-3 text-sm font-semibold";
+    }
+
+    function updateSubmit() {
+      submitButton.disabled = !(checkedUsername && selectedMonths && selectedPlatform);
+    }
+
+    async function checkUsername(value) {
+      checkedUsername = "";
+      updateSubmit();
+      if (!value) {
+        setHint("3–24 символа: латинские буквы, цифры и знак _", "");
+        return;
+      }
+      if (!validUsername(value)) {
+        setHint("Начните с латинской буквы; используйте буквы, цифры и _", "error");
+        return;
+      }
+      if (token && value === accountUsername) {
+        checkedUsername = value;
+        setHint("Это ваше имя", "success");
+        updateSubmit();
+        return;
+      }
+      if (pendingCheck) pendingCheck.abort();
+      pendingCheck = new AbortController();
+      setHint("Проверяем имя…", "");
+      try {
+        var data = await request("/usernames/" + encodeURIComponent(value) + "/availability", { signal: pendingCheck.signal });
+        if (data.available) {
+          checkedUsername = value;
+          setHint("Имя свободно", "success");
+        } else {
+          setHint(data.reason || "Это имя уже занято", "error");
+        }
+      } catch (error) {
+        if (error.name !== "AbortError") setHint("Не удалось проверить имя", "error");
+      }
+      updateSubmit();
+    }
+
+    usernameInput.addEventListener("input", function () {
+      var value = normalizeUsername(usernameInput.value);
+      if (usernameInput.value !== value) usernameInput.value = value;
+      window.clearTimeout(timer);
+      timer = window.setTimeout(function () { checkUsername(value); }, 350);
+    });
+
+    function selectChoice(containerId, attribute, value) {
+      var container = document.getElementById(containerId);
+      var buttons = container.querySelectorAll("[" + attribute + "]");
+      buttons.forEach(function (button) {
+        button.classList.toggle("active", button.getAttribute(attribute) === value);
+        button.setAttribute("aria-pressed", button.getAttribute(attribute) === value ? "true" : "false");
+      });
+      if (attribute === "data-months") selectedMonths = value;
+      if (attribute === "data-platform") selectedPlatform = value;
+      updateSubmit();
+    }
+
+    document.getElementById("registrationTariffs").addEventListener("click", function (event) {
+      var button = event.target.closest("[data-months]");
+      if (button) selectChoice("registrationTariffs", "data-months", button.getAttribute("data-months"));
+    });
+
+    document.getElementById("registrationPlatforms").addEventListener("click", function (event) {
+      var button = event.target.closest("[data-platform]");
+      if (button) selectChoice("registrationPlatforms", "data-platform", button.getAttribute("data-platform"));
+    });
+
+    document.querySelectorAll("[data-registration-months]").forEach(function (link) {
+      link.addEventListener("click", function () {
+        selectChoice("registrationTariffs", "data-months", link.getAttribute("data-registration-months"));
+      });
+    });
+
+    async function loadExistingAccount() {
+      token = localStorage.getItem(TOKEN_KEY) || "";
+      if (!token) return;
+      try {
+        var data = await request("/account", { headers: { "Authorization": "Bearer " + token } });
+        accountUsername = data.account.username;
+        checkedUsername = accountUsername;
+        usernameInput.value = accountUsername;
+        localStorage.setItem(NAME_KEY, accountUsername);
+        setHint("Это ваше имя", "success");
+        updateSubmit();
+      } catch (error) {
+        if (error.status === 401) {
+          token = "";
+          accountUsername = "";
+          localStorage.removeItem(TOKEN_KEY);
+          localStorage.removeItem(NAME_KEY);
+        }
+      }
+    }
+
+    document.getElementById("registrationForm").addEventListener("submit", async function (event) {
+      event.preventDefault();
+      hideMessage();
+      var username = normalizeUsername(usernameInput.value);
+      if (!username || username !== checkedUsername || !selectedMonths || !selectedPlatform) return;
+      submitButton.disabled = true;
+      submitButton.textContent = "Создаём кабинет…";
+      try {
+        if (token && username !== accountUsername) {
+          var renamed = await request("/account/username", {
+            method: "PATCH",
+            headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
+            body: JSON.stringify({ username: username })
+          });
+          accountUsername = renamed.account.username;
+        } else if (!token) {
+          var created = await request("/accounts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: username })
+          });
+          token = created.token;
+          accountUsername = created.account.username;
+          localStorage.setItem(TOKEN_KEY, token);
+        }
+        localStorage.setItem(NAME_KEY, accountUsername);
+        localStorage.setItem("topvpn_onboarding", JSON.stringify({ username: accountUsername, months: selectedMonths, platform: selectedPlatform }));
+        window.location.href = "/account/#" + encodeURIComponent(token);
+      } catch (error) {
+        if (error.code === "username_taken") {
+          checkedUsername = "";
+          setHint("Это имя только что заняли. Выберите другое", "error");
+        } else {
+          showMessage("Не удалось создать кабинет. Попробуйте ещё раз", "error");
+        }
+        submitButton.textContent = "Продолжить";
+        updateSubmit();
+      }
+    });
+
+    loadExistingAccount();
+  })();
+  </script>
 </body>
 </html>
