@@ -101,6 +101,19 @@
               <button type="button" class="onboarding-choice rounded-2xl border-2 border-slate-200 p-3 font-bold" data-platform="macos">🍎 macOS</button>
               <button type="button" class="onboarding-choice rounded-2xl border-2 border-slate-200 p-3 font-bold col-span-2 md:col-span-1" data-platform="linux">🐧 Linux</button>
             </div>
+            <div id="registrationPlatformHelp" class="hidden mt-4 rounded-2xl border border-blue-100 bg-blue-50 p-5">
+              <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                <div>
+                  <div class="text-sm font-extrabold text-blue-700" id="registrationAppName"></div>
+                  <ol class="mt-3 ml-5 list-decimal space-y-2 text-sm leading-relaxed text-slate-700" id="registrationAppSteps"></ol>
+                  <p class="hidden mt-3 text-sm font-semibold text-amber-800" id="registrationAppNote"></p>
+                </div>
+                <a id="registrationAppLink" href="#" target="_blank" rel="noopener"
+                   class="shrink-0 inline-flex min-h-11 items-center justify-center rounded-xl bg-white border border-blue-200 px-5 font-bold text-blue-700 hover:bg-blue-100 transition">
+                  Установить приложение
+                </a>
+              </div>
+            </div>
           </fieldset>
 
           <div id="registrationMessage" class="hidden mb-4 rounded-2xl px-4 py-3 text-sm font-semibold" role="status"></div>
@@ -346,6 +359,26 @@
     var timer = 0;
     var pendingCheck = null;
 
+    var PLATFORM_APPS = {
+      ios:     { name: "DefaultVPN", url: "https://apps.apple.com/app/defaultvpn/id6744725017" },
+      android: { name: "AmneziaWG", url: "https://play.google.com/store/apps/details?id=org.amnezia.awg" },
+      windows: { name: "AmneziaWG", url: "https://github.com/amnezia-vpn/amneziawg-windows-client/releases/download/3.1.0/amneziawg-amd64-3.1.0.msi" },
+      macos:   { name: "AmneziaWG", url: "https://apps.apple.com/app/amneziawg/id6478942365" },
+      linux:   { name: "AmneziaVPN", url: "https://github.com/amnezia-vpn/amnezia-client/releases/latest" }
+    };
+
+    var PLATFORM_STEPS = {
+      ios: ["Установите DefaultVPN", "После оплаты скопируйте ключ из кабинета", "В приложении нажмите + → «Вставить» → «Добавить» → «Подключить»"],
+      android: ["Установите AmneziaWG", "После оплаты скачайте файл настроек из кабинета", "Откройте файл в AmneziaWG, подтвердите импорт и включите туннель"],
+      windows: ["Скачайте и установите AmneziaWG", "Сохраните файл настроек из кабинета", "Выберите «Import tunnel(s) from file», укажите файл и нажмите «Connect»"],
+      macos: ["Установите AmneziaWG", "Сохраните файл настроек из кабинета", "Выберите «Import tunnel(s) from file», укажите файл и нажмите «Connect»"],
+      linux: ["Скачайте AmneziaVPN и запустите установщик .run", "Добавьте подключение файлом или ключом из кабинета", "Нажмите «Подключить»"]
+    };
+
+    var PLATFORM_NOTES = {
+      linux: "Не отключайте IPv6 в системе — иначе кнопка подключения может не работать."
+    };
+
     function normalizeUsername(value) {
       return String(value || "").trim().toLowerCase();
     }
@@ -385,6 +418,25 @@
 
     function updateSubmit() {
       submitButton.disabled = !(checkedUsername && selectedMonths && selectedPlatform);
+    }
+
+    function renderPlatformHelp(platform) {
+      var app = PLATFORM_APPS[platform];
+      var steps = PLATFORM_STEPS[platform];
+      if (!app || !steps) return;
+      document.getElementById("registrationAppName").textContent = "Приложение: " + app.name;
+      document.getElementById("registrationAppSteps").innerHTML = steps.map(function (step) {
+        var item = document.createElement("li");
+        item.textContent = step;
+        return item.outerHTML;
+      }).join("");
+      var link = document.getElementById("registrationAppLink");
+      link.href = app.url;
+      link.textContent = "Установить " + app.name;
+      var note = document.getElementById("registrationAppNote");
+      note.textContent = PLATFORM_NOTES[platform] || "";
+      note.classList.toggle("hidden", !PLATFORM_NOTES[platform]);
+      document.getElementById("registrationPlatformHelp").classList.remove("hidden");
     }
 
     async function checkUsername(value) {
@@ -436,7 +488,10 @@
         button.setAttribute("aria-pressed", button.getAttribute(attribute) === value ? "true" : "false");
       });
       if (attribute === "data-months") selectedMonths = value;
-      if (attribute === "data-platform") selectedPlatform = value;
+      if (attribute === "data-platform") {
+        selectedPlatform = value;
+        renderPlatformHelp(value);
+      }
       updateSubmit();
     }
 
