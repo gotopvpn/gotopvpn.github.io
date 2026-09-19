@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="Личный кабинет TopVPN" />
+  <meta name="referrer" content="no-referrer" />
+  <title>Личный кабинет — TopVPN</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --blue: #2563eb;
+      --blue-dark: #1d4ed8;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --surface: #ffffff;
+      --soft: #eff6ff;
+      --success: #15803d;
+      --danger: #b91c1c;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 12% 0%, rgba(14,165,233,.18), transparent 34rem),
+        linear-gradient(180deg, #f8fbff 0%, #f8fafc 60%, #eef2ff 100%);
+      color: var(--ink);
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+    button, input { font: inherit; }
+    a { color: inherit; }
+    .shell { width: min(100% - 32px, 760px); margin: 0 auto; padding: 24px 0 48px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 36px; }
+    .brand { color: var(--blue); font-size: 24px; font-weight: 900; text-decoration: none; letter-spacing: -.04em; }
+    .home { color: #475569; font-size: 14px; font-weight: 700; text-decoration: none; }
+    .home:hover { color: var(--blue); }
+    .hero { margin-bottom: 20px; }
+    .eyebrow { margin: 0 0 8px; color: var(--blue); font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .12em; }
+    h1 { margin: 0; font-size: clamp(32px, 8vw, 48px); line-height: 1.05; letter-spacing: -.045em; }
+    .lead { max-width: 610px; margin: 14px 0 0; color: var(--muted); font-size: 17px; line-height: 1.6; }
+    .card { padding: clamp(22px, 5vw, 34px); background: rgba(255,255,255,.92); border: 1px solid rgba(226,232,240,.9); border-radius: 28px; box-shadow: 0 20px 60px rgba(15,23,42,.08); }
+    .hidden { display: none !important; }
+    .field-label { display: block; margin-bottom: 9px; font-size: 14px; font-weight: 800; }
+    .input-wrap { position: relative; }
+    .at { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 18px; font-weight: 800; }
+    input {
+      width: 100%; min-height: 54px; padding: 0 16px 0 38px; border: 2px solid var(--line); border-radius: 16px;
+      background: #fff; color: var(--ink); outline: 0; transition: border-color .16s, box-shadow .16s;
+    }
+    input:focus { border-color: #60a5fa; box-shadow: 0 0 0 4px rgba(96,165,250,.15); }
+    input[aria-invalid="true"] { border-color: #f87171; }
+    .hint { min-height: 22px; margin: 8px 2px 18px; color: var(--muted); font-size: 13px; line-height: 1.45; }
+    .hint.success { color: var(--success); }
+    .hint.error { color: var(--danger); }
+    .button {
+      display: inline-flex; min-height: 52px; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 16px;
+      padding: 0 22px; background: var(--blue); color: #fff; font-weight: 850; cursor: pointer; text-decoration: none;
+      transition: transform .15s, background .15s, opacity .15s;
+    }
+    .button:hover { background: var(--blue-dark); transform: translateY(-1px); }
+    .button:disabled { cursor: not-allowed; opacity: .48; transform: none; }
+    .button.secondary { background: var(--soft); color: var(--blue-dark); }
+    .button.secondary:hover { background: #dbeafe; }
+    .button.ghost { min-height: 42px; padding: 0; background: transparent; color: var(--muted); font-size: 14px; }
+    .button.ghost:hover { color: var(--ink); transform: none; }
+    .wide { width: 100%; }
+    .privacy { display: flex; gap: 12px; margin-top: 20px; padding: 16px; border-radius: 18px; background: #f8fafc; color: #475569; font-size: 13px; line-height: 1.55; }
+    .privacy strong { color: var(--ink); }
+    .privacy-icon { flex: 0 0 auto; font-size: 20px; }
+    .account-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 28px; }
+    .account-name { margin: 3px 0 4px; font-size: 30px; font-weight: 900; letter-spacing: -.035em; }
+    .status { display: inline-flex; align-items: center; gap: 7px; color: var(--success); font-size: 13px; font-weight: 800; }
+    .status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 4px #dcfce7; }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .panel { min-height: 150px; padding: 20px; border: 1px solid var(--line); border-radius: 20px; background: #fff; }
+    .panel h2 { margin: 0 0 8px; font-size: 17px; }
+    .panel p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.55; }
+    .panel .button { margin-top: 18px; min-height: 44px; width: 100%; font-size: 14px; }
+    .empty { grid-column: 1 / -1; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: linear-gradient(145deg, #fff, #f8fbff); }
+    .empty-icon { margin-bottom: 12px; font-size: 30px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+    .toast { position: fixed; left: 50%; bottom: 24px; z-index: 10; transform: translate(-50%, 20px); padding: 12px 16px; border-radius: 14px; background: #0f172a; color: #fff; font-size: 14px; font-weight: 700; opacity: 0; pointer-events: none; transition: .2s; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .loader { width: 30px; height: 30px; margin: 44px auto; border: 3px solid #dbeafe; border-top-color: var(--blue); border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (max-width: 620px) {
+      .shell { width: min(100% - 24px, 760px); padding-top: 18px; }
+      .topbar { margin-bottom: 30px; }
+      .card { border-radius: 24px; }
+      .grid { grid-template-columns: 1fr; }
+      .account-head { display: block; }
+      .account-head .button { margin-top: 16px; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <nav class="topbar">
+      <a class="brand" href="/">TopVPN</a>
+      <a class="home" href="/">На главную</a>
+    </nav>
+
+    <section class="hero">
+      <p class="eyebrow">Личный кабинет</p>
+      <h1 id="pageTitle">Ваш TopVPN</h1>
+      <p class="lead" id="pageLead">Придумайте имя аккаунта. По нему мы свяжем подписки и платежи, а доступ защитим отдельной секретной ссылкой.</p>
+    </section>
+
+    <section class="card" id="loadingView" aria-label="Загрузка">
+      <div class="loader"></div>
+    </section>
+
+    <section class="card hidden" id="registerView">
+      <form id="registerForm" novalidate>
+        <label class="field-label" for="username">Имя аккаунта</label>
+        <div class="input-wrap">
+          <span class="at">@</span>
+          <input id="username" name="username" type="text" inputmode="text" autocomplete="username"
+                 minlength="3" maxlength="24" spellcheck="false" placeholder="igor89"
+                 aria-describedby="usernameHint" />
+        </div>
+        <div class="hint" id="usernameHint">3–24 символа: латинские буквы, цифры и знак _</div>
+        <button class="button wide" id="createButton" type="submit" disabled>Создать кабинет</button>
+      </form>
+      <div class="privacy">
+        <span class="privacy-icon">🔐</span>
+        <div><strong>Имя не используется для входа.</strong> После создания вы получите секретную ссылку. Сохраните её: по ней открывается кабинет.</div>
+      </div>
+    </section>
+
+    <section class="card hidden" id="accountView">
+      <div class="account-head">
+        <div>
+          <div class="status">Кабинет активен</div>
+          <div class="account-name" id="accountName"></div>
+        </div>
+        <button class="button secondary" id="copyLinkButton" type="button">Скопировать ссылку</button>
+      </div>
+
+      <div class="grid">
+        <div class="panel empty" id="subscriptionsPanel">
+          <div class="empty-icon">🛡️</div>
+          <h2>Подключений пока нет</h2>
+          <p>После покупки здесь появятся срок подписки, трафик и кнопка подключения.</p>
+        </div>
+        <div class="panel">
+          <h2>Имя аккаунта</h2>
+          <p>Можно изменить, если новое имя свободно.</p>
+          <button class="button secondary" id="renameButton" type="button">Изменить имя</button>
+        </div>
+        <div class="panel">
+          <h2>Доступ к кабинету</h2>
+          <p>Секретная ссылка хранится только на этом устройстве и у вас.</p>
+          <button class="button secondary" id="copyLinkButton2" type="button">Скопировать ссылку</button>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="button ghost" id="forgetButton" type="button">Выйти на этом устройстве</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+  (function () {
+    "use strict";
+
+    var API = "https://vpntop.duckdns.org/api/account/v1";
+    var TOKEN_KEY = "topvpn_account_token";
+    var token = "";
+    var availabilityTimer = 0;
+    var availabilityRequest = null;
+    var checkedUsername = "";
+
+    var loadingView = document.getElementById("loadingView");
+    var registerView = document.getElementById("registerView");
+    var accountView = document.getElementById("accountView");
+    var usernameInput = document.getElementById("username");
+    var usernameHint = document.getElementById("usernameHint");
+    var createButton = document.getElementById("createButton");
+
+    function normalizeUsername(value) {
+      return String(value || "").trim().toLowerCase();
+    }
+
+    function validUsername(value) {
+      return /^[a-z][a-z0-9_]{2,23}$/.test(value);
+    }
+
+    function setView(view) {
+      loadingView.classList.toggle("hidden", view !== "loading");
+      registerView.classList.toggle("hidden", view !== "register");
+      accountView.classList.toggle("hidden", view !== "account");
+    }
+
+    function setHint(text, state) {
+      usernameHint.textContent = text;
+      usernameHint.className = "hint" + (state ? " " + state : "");
+      usernameInput.setAttribute("aria-invalid", state === "error" ? "true" : "false");
+    }
+
+    function toast(message) {
+      var el = document.getElementById("toast");
+      el.textContent = message;
+      el.classList.add("show");
+      window.clearTimeout(toast.timer);
+      toast.timer = window.setTimeout(function () { el.classList.remove("show"); }, 2200);
+    }
+
+    async function request(path, options) {
+      var response = await fetch(API + path, options || {});
+      var data = {};
+      try { data = await response.json(); } catch (_) {}
+      if (!response.ok) {
+        var error = new Error(data.message || data.error || "request_failed");
+        error.status = response.status;
+        error.code = data.error;
+        throw error;
+      }
+      return data;
+    }
+
+    function accessLink() {
+      return window.location.origin + "/account/#" + encodeURIComponent(token);
+    }
+
+    async function copyAccessLink() {
+      try {
+        await navigator.clipboard.writeText(accessLink());
+        toast("Ссылка скопирована");
+      } catch (_) {
+        window.prompt("Скопируйте ссылку кабинета", accessLink());
+      }
+    }
+
+    function renderAccount(account) {
+      document.getElementById("pageTitle").textContent = "Ваш TopVPN";
+      document.getElementById("pageLead").textContent = "Управляйте подключениями и подпиской в одном месте.";
+      document.getElementById("accountName").textContent = "@" + account.username;
+      setView("account");
+    }
+
+    async function loadAccount() {
+      try {
+        var data = await request("/account", { headers: { "Authorization": "Bearer " + token } });
+        renderAccount(data.account);
+      } catch (error) {
+        if (error.status === 401) {
+          localStorage.removeItem(TOKEN_KEY);
+          history.replaceState(null, "", "/account/");
+          token = "";
+          setView("register");
+          setHint("Секретная ссылка недействительна. Создайте новый кабинет", "error");
+        } else {
+          setView("register");
+          setHint("Не удалось связаться с сервером. Попробуйте ещё раз", "error");
+        }
+      }
+    }
+
+    async function checkAvailability(value) {
+      checkedUsername = "";
+      createButton.disabled = true;
+      if (!value) {
+        setHint("3–24 символа: латинские буквы, цифры и знак _", "");
+        return;
+      }
+      if (!validUsername(value)) {
+        setHint("Начните с латинской буквы; используйте буквы, цифры и _", "error");
+        return;
+      }
+      if (availabilityRequest) availabilityRequest.abort();
+      availabilityRequest = new AbortController();
+      setHint("Проверяем имя…", "");
+      try {
+        var data = await request("/usernames/" + encodeURIComponent(value) + "/availability", { signal: availabilityRequest.signal });
+        if (data.available) {
+          checkedUsername = value;
+          createButton.disabled = false;
+          setHint("Имя свободно", "success");
+        } else {
+          setHint(data.reason || "Это имя уже занято", "error");
+        }
+      } catch (error) {
+        if (error.name !== "AbortError") setHint("Не удалось проверить имя", "error");
+      }
+    }
+
+    usernameInput.addEventListener("input", function () {
+      var value = normalizeUsername(usernameInput.value);
+      if (usernameInput.value !== value) usernameInput.value = value;
+      window.clearTimeout(availabilityTimer);
+      availabilityTimer = window.setTimeout(function () { checkAvailability(value); }, 350);
+    });
+
+    document.getElementById("registerForm").addEventListener("submit", async function (event) {
+      event.preventDefault();
+      var username = normalizeUsername(usernameInput.value);
+      if (username !== checkedUsername) return;
+      createButton.disabled = true;
+      createButton.textContent = "Создаём…";
+      try {
+        var data = await request("/accounts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: username })
+        });
+        token = data.token;
+        localStorage.setItem(TOKEN_KEY, token);
+        history.replaceState(null, "", "/account/#" + encodeURIComponent(token));
+        renderAccount(data.account);
+        toast("Кабинет создан");
+      } catch (error) {
+        if (error.code === "username_taken") {
+          checkedUsername = "";
+          setHint("Это имя только что заняли. Выберите другое", "error");
+        } else {
+          setHint("Не удалось создать кабинет. Попробуйте ещё раз", "error");
+        }
+      } finally {
+        createButton.textContent = "Создать кабинет";
+        createButton.disabled = checkedUsername !== normalizeUsername(usernameInput.value);
+      }
+    });
+
+    async function renameAccount() {
+      var current = document.getElementById("accountName").textContent.replace(/^@/, "");
+      var next = window.prompt("Новое имя аккаунта", current);
+      if (next === null) return;
+      next = normalizeUsername(next);
+      if (!validUsername(next)) {
+        toast("Проверьте формат имени");
+        return;
+      }
+      try {
+        var data = await request("/account/username", {
+          method: "PATCH",
+          headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
+          body: JSON.stringify({ username: next })
+        });
+        document.getElementById("accountName").textContent = "@" + data.account.username;
+        toast("Имя изменено");
+      } catch (error) {
+        toast(error.code === "username_taken" ? "Это имя уже занято" : "Не удалось изменить имя");
+      }
+    }
+
+    document.getElementById("copyLinkButton").addEventListener("click", copyAccessLink);
+    document.getElementById("copyLinkButton2").addEventListener("click", copyAccessLink);
+    document.getElementById("renameButton").addEventListener("click", renameAccount);
+    document.getElementById("forgetButton").addEventListener("click", function () {
+      localStorage.removeItem(TOKEN_KEY);
+      history.replaceState(null, "", "/account/");
+      token = "";
+      window.location.reload();
+    });
+
+    try {
+      token = decodeURIComponent(window.location.hash.replace(/^#/, "")) || localStorage.getItem(TOKEN_KEY) || "";
+    } catch (_) {
+      token = localStorage.getItem(TOKEN_KEY) || "";
+    }
+    if (token) {
+      localStorage.setItem(TOKEN_KEY, token);
+      if (!window.location.hash) history.replaceState(null, "", "/account/#" + encodeURIComponent(token));
+      loadAccount();
+    } else {
+      setView("register");
+    }
+  })();
+  </script>
+</body>
+</html>
