@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>TopVPN</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script async src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
   :root{
     --blue-1:#0ea5e9; --blue-2:#2563eb; --blue-3:#1e40af;
@@ -25,6 +25,20 @@
   .lead{font-size:15px;line-height:1.5;opacity:.9;margin:0}
   h2{font-size:19px;font-weight:800;margin:0 0 14px}
   section{margin-bottom:28px}
+  .field-label{display:block;font-size:14px;font-weight:800;margin-bottom:8px}
+  .input-wrap{position:relative}
+  .input-at{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:800;opacity:.7}
+  .name-input{
+    width:100%;height:52px;border-radius:15px;border:1px solid var(--border);
+    background:rgba(255,255,255,.12);color:#fff;padding:0 14px 0 34px;
+    font:inherit;font-size:16px;outline:none;transition:.15s;
+  }
+  .name-input::placeholder{color:rgba(255,255,255,.55)}
+  .name-input:focus{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.65)}
+  .name-input[aria-invalid="true"]{border-color:#fecaca;background:rgba(127,29,29,.2)}
+  .name-hint{min-height:20px;margin:7px 2px 0;font-size:12px;line-height:1.45;opacity:.82}
+  .name-hint.success{color:#dcfce7;opacity:1}
+  .name-hint.error{color:#fee2e2;opacity:1}
   .card{
     background:var(--card);border:1px solid var(--border);
     border-radius:20px;padding:16px;backdrop-filter:blur(6px);
@@ -74,6 +88,20 @@
   <p class="lead" id="leadText">Стабильный доступ без блокировок.<br/>Оплата и управление — в Telegram.</p>
 </header>
 
+<section id="nameSection">
+  <h2>Имя аккаунта</h2>
+  <div class="card">
+    <label class="field-label" for="username">Придумайте уникальное имя</label>
+    <div class="input-wrap">
+      <span class="input-at">@</span>
+      <input class="name-input" id="username" type="text" inputmode="text" autocomplete="username"
+             minlength="3" maxlength="24" spellcheck="false" placeholder="igor89"
+             aria-describedby="usernameHint" />
+    </div>
+    <div class="name-hint" id="usernameHint">3–24 символа: латинские буквы, цифры и знак _</div>
+  </div>
+</section>
+
 <section>
   <h2>Тариф</h2>
   <div class="tariffs" id="tariffs">
@@ -115,6 +143,10 @@
   var tg = window.Telegram && window.Telegram.WebApp;
   if (tg) { try { tg.ready(); tg.expand(); } catch(e){} }
 
+  var API = "https://vpntop.duckdns.org/api/account/v1";
+  var TOKEN_KEY = "topvpn_account_token";
+  var ACCOUNT_NAME_KEY = "topvpn_account_username";
+
   var APPS = {
     ios:     {name:"DefaultVPN",  url:"https://apps.apple.com/app/defaultvpn/id6744725017"},
     android: {name:"AmneziaWG",   url:"https://play.google.com/store/apps/details?id=org.amnezia.awg"},
@@ -134,6 +166,125 @@
   var NOTES = { linux: "Не отключайте IPv6 в системе — иначе кнопка подключения не работает." };
 
   var months = null, os = null;
+  var accountToken = "";
+  var accountUsername = "";
+  var checkedUsername = "";
+  var availabilityTimer = 0;
+  var availabilityRequest = null;
+  var usernameInput = document.getElementById("username");
+  var usernameHint = document.getElementById("usernameHint");
+
+  function normalizeUsername(value){
+    return String(value || "").trim().toLowerCase();
+  }
+
+  function validUsername(value){
+    return /^[a-z][a-z0-9_]{2,23}$/.test(value);
+  }
+
+  function setNameHint(text, state){
+    usernameHint.textContent = text;
+    usernameHint.className = "name-hint" + (state ? " " + state : "");
+    usernameInput.setAttribute("aria-invalid", state === "error" ? "true" : "false");
+  }
+
+  async function apiRequest(path, options){
+    var response = await fetch(API + path, options || {});
+    var data = {};
+    try { data = await response.json(); } catch(e) {}
+    if (!response.ok) {
+      var error = new Error(data.message || data.error || "request_failed");
+      error.status = response.status;
+      error.code = data.error;
+      throw error;
+    }
+    return data;
+  }
+
+  async function checkUsername(value){
+    checkedUsername = "";
+    if (!value) {
+      setNameHint("3–24 символа: латинские буквы, цифры и знак _", "");
+      return;
+    }
+    if (!validUsername(value)) {
+      setNameHint("Начните с латинской буквы; используйте буквы, цифры и _", "error");
+      return;
+    }
+    if (accountToken && value === accountUsername) {
+      checkedUsername = value;
+      setNameHint("Это ваше имя", "success");
+      return;
+    }
+    if (availabilityRequest) availabilityRequest.abort();
+    availabilityRequest = new AbortController();
+    setNameHint("Проверяем имя…", "");
+    try {
+      var data = await apiRequest("/usernames/" + encodeURIComponent(value) + "/availability", {signal: availabilityRequest.signal});
+      if (data.available) {
+        checkedUsername = value;
+        setNameHint("Имя свободно", "success");
+      } else {
+        setNameHint(data.reason || "Это имя уже занято", "error");
+      }
+    } catch(error) {
+      if (error.name !== "AbortError") setNameHint("Не удалось проверить имя", "error");
+    }
+  }
+
+  usernameInput.addEventListener("input", function(){
+    var value = normalizeUsername(usernameInput.value);
+    if (usernameInput.value !== value) usernameInput.value = value;
+    clearTimeout(availabilityTimer);
+    availabilityTimer = setTimeout(function(){ checkUsername(value); }, 350);
+  });
+
+  async function loadAccount(){
+    accountToken = localStorage.getItem(TOKEN_KEY) || "";
+    if (!accountToken) return;
+    try {
+      var data = await apiRequest("/account", {headers:{"Authorization":"Bearer " + accountToken}});
+      accountUsername = data.account.username;
+      checkedUsername = accountUsername;
+      usernameInput.value = accountUsername;
+      localStorage.setItem(ACCOUNT_NAME_KEY, accountUsername);
+      setNameHint("Это ваше имя", "success");
+    } catch(error) {
+      if (error.status === 401) {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(ACCOUNT_NAME_KEY);
+        accountToken = "";
+        accountUsername = "";
+      }
+    }
+  }
+
+  async function ensureAccount(username){
+    if (accountToken && username === accountUsername) return true;
+    if (accountToken) {
+      var renamed = await apiRequest("/account/username", {
+        method:"PATCH",
+        headers:{"Authorization":"Bearer " + accountToken,"Content-Type":"application/json"},
+        body:JSON.stringify({username:username})
+      });
+      accountUsername = renamed.account.username;
+    } else {
+      var created = await apiRequest("/accounts", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({username:username})
+      });
+      accountToken = created.token;
+      accountUsername = created.account.username;
+      localStorage.setItem(TOKEN_KEY, accountToken);
+    }
+    checkedUsername = accountUsername;
+    localStorage.setItem(ACCOUNT_NAME_KEY, accountUsername);
+    setNameHint("Имя зарегистрировано", "success");
+    return true;
+  }
+
+  loadAccount();
 
   // Режим продления: t.me/GetTopVPN_bot/app?startapp=renew
   var isRenew = false;
@@ -148,6 +299,7 @@
 
   if (isRenew) {
     os = "renew";
+    document.getElementById("nameSection").style.display = "none";
     document.getElementById("osSection").style.display = "none";
     document.getElementById("leadText").innerHTML = "Продление подписки.<br/>Выберите срок — счёт придёт в чат с ботом.";
     document.getElementById("connectBtn").textContent = "Продлить";
@@ -197,9 +349,31 @@
   }
 
   var btn = document.getElementById("connectBtn");
-  btn.addEventListener("click", function(){
+  btn.addEventListener("click", async function(){
+    var username = normalizeUsername(usernameInput.value);
+    if (!isRenew && (!validUsername(username) || username !== checkedUsername)) { notify("Введите свободное имя аккаунта"); return; }
     if (!months) { notify("Выберите тариф"); return; }
     if (!isRenew && !os) { notify("Выберите устройство"); return; }
+
+    if (!isRenew) {
+      btn.disabled = true;
+      var previousText = btn.textContent;
+      btn.textContent = "Создаём кабинет…";
+      try {
+        await ensureAccount(username);
+      } catch(error) {
+        btn.disabled = false;
+        btn.textContent = previousText;
+        if (error.code === "username_taken") {
+          checkedUsername = "";
+          setNameHint("Это имя только что заняли. Выберите другое", "error");
+        } else {
+          notify("Не удалось создать кабинет. Попробуйте ещё раз");
+        }
+        return;
+      }
+      localStorage.setItem("topvpn_onboarding", JSON.stringify({username:accountUsername, months:months, os:os}));
+    }
 
     var param = "buy_" + months + "_" + os;
     var link = "https://t.me/GetTopVPN_bot?start=" + param;
