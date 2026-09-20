@@ -51,6 +51,7 @@
     }
     input:focus { border-color: #60a5fa; box-shadow: 0 0 0 4px rgba(96,165,250,.15); }
     input[aria-invalid="true"] { border-color: #f87171; }
+    input.password { margin-top: 12px; padding-left: 16px; }
     .hint { min-height: 22px; margin: 8px 2px 18px; color: var(--muted); font-size: 13px; line-height: 1.45; }
     .hint.success { color: var(--success); }
     .hint.error { color: var(--danger); }
@@ -105,7 +106,7 @@
     <section class="hero">
       <p class="eyebrow">Личный кабинет</p>
       <h1 id="pageTitle">Ваш TopVPN</h1>
-      <p class="lead" id="pageLead">Придумайте имя аккаунта. По нему мы свяжем подписки и платежи, а доступ защитим отдельной секретной ссылкой.</p>
+      <p class="lead" id="pageLead">Войдите по имени аккаунта и паролю.</p>
     </section>
 
     <section class="card" id="loadingView" aria-label="Загрузка">
@@ -121,12 +122,14 @@
                  minlength="3" maxlength="24" spellcheck="false" placeholder="username"
                  aria-describedby="usernameHint" />
         </div>
-        <div class="hint" id="usernameHint">3–24 символа: латинские буквы, цифры и знак _</div>
-        <button class="button wide" id="createButton" type="submit" disabled>Создать кабинет</button>
+        <input class="password" id="password" name="password" type="password" autocomplete="current-password"
+               minlength="8" maxlength="128" placeholder="Пароль" aria-describedby="usernameHint" />
+        <div class="hint" id="usernameHint">Введите данные, которые указали перед оплатой</div>
+        <button class="button wide" id="createButton" type="submit">Войти</button>
       </form>
       <div class="privacy">
         <span class="privacy-icon">🔐</span>
-        <div><strong>Имя не используется для входа.</strong> После создания вы получите секретную ссылку. Сохраните её: по ней открывается кабинет.</div>
+        <div><strong>Ещё нет кабинета?</strong> <a href="/#registration">Создайте его на главной странице</a> и выберите тариф.</div>
       </div>
     </section>
 
@@ -136,7 +139,7 @@
           <div class="status">Кабинет активен</div>
           <div class="account-name" id="accountName"></div>
         </div>
-        <button class="button secondary" id="copyLinkButton" type="button">Скопировать ссылку</button>
+        <a class="button secondary" href="/#registration">Купить подписку</a>
       </div>
 
       <div class="grid">
@@ -152,8 +155,7 @@
         </div>
         <div class="panel">
           <h2>Доступ к кабинету</h2>
-          <p>Секретная ссылка хранится только на этом устройстве и у вас.</p>
-          <button class="button secondary" id="copyLinkButton2" type="button">Скопировать ссылку</button>
+          <p>Для входа с другого устройства используйте имя аккаунта и пароль.</p>
         </div>
       </div>
 
@@ -172,45 +174,31 @@
     var API = "https://vpntop.duckdns.org/api/account/v1";
     var TOKEN_KEY = "topvpn_account_token";
     var token = "";
-    var availabilityTimer = 0;
-    var availabilityRequest = null;
-    var checkedUsername = "";
-
     var loadingView = document.getElementById("loadingView");
     var registerView = document.getElementById("registerView");
     var accountView = document.getElementById("accountView");
     var usernameInput = document.getElementById("username");
+    var passwordInput = document.getElementById("password");
     var usernameHint = document.getElementById("usernameHint");
-    var createButton = document.getElementById("createButton");
+    var loginButton = document.getElementById("createButton");
 
-    function normalizeUsername(value) {
-      return String(value || "").trim().toLowerCase();
-    }
-
-    function validUsername(value) {
-      return /^[a-z][a-z0-9_]{2,23}$/.test(value);
-    }
-
+    function normalizeUsername(value) { return String(value || "").trim().toLowerCase(); }
     function setView(view) {
       loadingView.classList.toggle("hidden", view !== "loading");
       registerView.classList.toggle("hidden", view !== "register");
       accountView.classList.toggle("hidden", view !== "account");
     }
-
     function setHint(text, state) {
       usernameHint.textContent = text;
       usernameHint.className = "hint" + (state ? " " + state : "");
-      usernameInput.setAttribute("aria-invalid", state === "error" ? "true" : "false");
     }
-
     function toast(message) {
       var el = document.getElementById("toast");
       el.textContent = message;
       el.classList.add("show");
       window.clearTimeout(toast.timer);
-      toast.timer = window.setTimeout(function () { el.classList.remove("show"); }, 2200);
+      toast.timer = window.setTimeout(function () { el.classList.remove("show"); }, 2500);
     }
-
     async function request(path, options) {
       var response = await fetch(API + path, options || {});
       var data = {};
@@ -223,154 +211,87 @@
       }
       return data;
     }
-
-    function accessLink() {
-      return window.location.origin + "/account/#" + encodeURIComponent(token);
-    }
-
-    async function copyAccessLink() {
-      try {
-        await navigator.clipboard.writeText(accessLink());
-        toast("Ссылка скопирована");
-      } catch (_) {
-        window.prompt("Скопируйте ссылку кабинета", accessLink());
-      }
-    }
-
     function renderAccount(account) {
       document.getElementById("pageTitle").textContent = "Ваш TopVPN";
       document.getElementById("pageLead").textContent = "Управляйте подключениями и подпиской в одном месте.";
       document.getElementById("accountName").textContent = "@" + account.username;
       setView("account");
     }
-
     async function loadAccount() {
       try {
         var data = await request("/account", { headers: { "Authorization": "Bearer " + token } });
         renderAccount(data.account);
+        checkReturnedPayment();
       } catch (error) {
-        if (error.status === 401) {
-          localStorage.removeItem(TOKEN_KEY);
-          history.replaceState(null, "", "/account/");
-          token = "";
-          setView("register");
-          setHint("Секретная ссылка недействительна. Создайте новый кабинет", "error");
-        } else {
-          setView("register");
-          setHint("Не удалось связаться с сервером. Попробуйте ещё раз", "error");
-        }
+        if (error.status === 401) localStorage.removeItem(TOKEN_KEY);
+        token = "";
+        history.replaceState(null, "", "/account/");
+        setView("register");
+        setHint(error.status === 401 ? "Сессия закончилась. Войдите снова" : "Не удалось связаться с сервером", "error");
       }
     }
-
-    async function checkAvailability(value) {
-      checkedUsername = "";
-      createButton.disabled = true;
-      if (!value) {
-        setHint("3–24 символа: латинские буквы, цифры и знак _", "");
-        return;
-      }
-      if (!validUsername(value)) {
-        setHint("Начните с латинской буквы; используйте буквы, цифры и _", "error");
-        return;
-      }
-      if (availabilityRequest) availabilityRequest.abort();
-      availabilityRequest = new AbortController();
-      setHint("Проверяем имя…", "");
-      try {
-        var data = await request("/usernames/" + encodeURIComponent(value) + "/availability", { signal: availabilityRequest.signal });
-        if (data.available) {
-          checkedUsername = value;
-          createButton.disabled = false;
-          setHint("Имя свободно", "success");
-        } else {
-          setHint(data.reason || "Это имя уже занято", "error");
-        }
-      } catch (error) {
-        if (error.name !== "AbortError") setHint("Не удалось проверить имя", "error");
-      }
-    }
-
-    usernameInput.addEventListener("input", function () {
-      var value = normalizeUsername(usernameInput.value);
-      if (usernameInput.value !== value) usernameInput.value = value;
-      window.clearTimeout(availabilityTimer);
-      availabilityTimer = window.setTimeout(function () { checkAvailability(value); }, 350);
-    });
-
     document.getElementById("registerForm").addEventListener("submit", async function (event) {
       event.preventDefault();
       var username = normalizeUsername(usernameInput.value);
-      if (username !== checkedUsername) return;
-      createButton.disabled = true;
-      createButton.textContent = "Создаём…";
+      if (!username || passwordInput.value.length < 8) {
+        setHint("Введите имя аккаунта и пароль не короче 8 символов", "error");
+        return;
+      }
+      loginButton.disabled = true;
+      loginButton.textContent = "Входим…";
       try {
-        var data = await request("/accounts", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username: username })
+        var data = await request("/sessions", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: username, password: passwordInput.value })
         });
         token = data.token;
         localStorage.setItem(TOKEN_KEY, token);
-        history.replaceState(null, "", "/account/#" + encodeURIComponent(token));
         renderAccount(data.account);
-        toast("Кабинет создан");
-      } catch (error) {
-        if (error.code === "username_taken") {
-          checkedUsername = "";
-          setHint("Это имя только что заняли. Выберите другое", "error");
-        } else {
-          setHint("Не удалось создать кабинет. Попробуйте ещё раз", "error");
-        }
+        checkReturnedPayment();
+      } catch (_) {
+        setHint("Неверное имя аккаунта или пароль", "error");
       } finally {
-        createButton.textContent = "Создать кабинет";
-        createButton.disabled = checkedUsername !== normalizeUsername(usernameInput.value);
+        loginButton.disabled = false;
+        loginButton.textContent = "Войти";
       }
     });
-
+    async function checkReturnedPayment() {
+      var params = new URLSearchParams(window.location.search);
+      var paymentId = params.get("payment");
+      if (!paymentId || !token) return;
+      try {
+        var data = await request("/payments/" + encodeURIComponent(paymentId), { headers: { "Authorization": "Bearer " + token } });
+        var labels = { paid: "Тестовая оплата прошла", created: "Ожидаем тестовую оплату", processing: "Тестовая оплата обрабатывается", expired: "Время оплаты истекло", canceled: "Оплата отменена" };
+        toast(labels[data.payment.status] || "Статус оплаты: " + data.payment.status);
+      } catch (_) {
+        toast("Не удалось проверить статус оплаты");
+      }
+      history.replaceState(null, "", "/account/");
+    }
     async function renameAccount() {
       var current = document.getElementById("accountName").textContent.replace(/^@/, "");
       var next = window.prompt("Новое имя аккаунта", current);
       if (next === null) return;
       next = normalizeUsername(next);
-      if (!validUsername(next)) {
-        toast("Проверьте формат имени");
-        return;
-      }
+      if (!/^[a-z][a-z0-9_]{2,23}$/.test(next)) { toast("Проверьте формат имени"); return; }
       try {
         var data = await request("/account/username", {
-          method: "PATCH",
-          headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
+          method: "PATCH", headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
           body: JSON.stringify({ username: next })
         });
         document.getElementById("accountName").textContent = "@" + data.account.username;
         toast("Имя изменено");
-      } catch (error) {
-        toast(error.code === "username_taken" ? "Это имя уже занято" : "Не удалось изменить имя");
-      }
+      } catch (error) { toast(error.code === "username_taken" ? "Это имя уже занято" : "Не удалось изменить имя"); }
     }
-
-    document.getElementById("copyLinkButton").addEventListener("click", copyAccessLink);
-    document.getElementById("copyLinkButton2").addEventListener("click", copyAccessLink);
     document.getElementById("renameButton").addEventListener("click", renameAccount);
     document.getElementById("forgetButton").addEventListener("click", function () {
       localStorage.removeItem(TOKEN_KEY);
-      history.replaceState(null, "", "/account/");
       token = "";
+      history.replaceState(null, "", "/account/");
       window.location.reload();
     });
-
-    try {
-      token = decodeURIComponent(window.location.hash.replace(/^#/, "")) || localStorage.getItem(TOKEN_KEY) || "";
-    } catch (_) {
-      token = localStorage.getItem(TOKEN_KEY) || "";
-    }
-    if (token) {
-      localStorage.setItem(TOKEN_KEY, token);
-      if (!window.location.hash) history.replaceState(null, "", "/account/#" + encodeURIComponent(token));
-      loadAccount();
-    } else {
-      setView("register");
-    }
+    token = localStorage.getItem(TOKEN_KEY) || "";
+    if (token) loadAccount(); else setView("register");
   })();
   </script>
 </body>

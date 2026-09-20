@@ -74,6 +74,14 @@
             <div id="siteUsernameHint" class="min-h-5 mt-2 text-sm text-slate-500">3–24 символа: латинские буквы, цифры и знак _</div>
           </div>
 
+          <div class="mb-7" id="sitePasswordBlock">
+            <label for="sitePassword" class="block font-bold mb-2">Пароль</label>
+            <input id="sitePassword" type="password" autocomplete="new-password" minlength="8" maxlength="128"
+                   placeholder="Не менее 8 символов"
+                   class="w-full h-14 rounded-2xl border-2 border-slate-200 px-4 outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-100 transition" />
+            <div class="min-h-5 mt-2 text-sm text-slate-500">Понадобится для входа в кабинет с другого устройства</div>
+          </div>
+
           <fieldset class="mb-7">
             <legend class="font-bold mb-3">Тариф</legend>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="registrationTariffs">
@@ -119,9 +127,9 @@
           <div id="registrationMessage" class="hidden mb-4 rounded-2xl px-4 py-3 text-sm font-semibold" role="status"></div>
           <button id="registrationSubmit" type="submit" disabled
                   class="w-full h-14 rounded-2xl bg-blue-600 text-white font-extrabold disabled:opacity-45 disabled:cursor-not-allowed hover:bg-blue-700 transition">
-            Продолжить
+            Перейти к оплате
           </button>
-          <p class="text-xs text-slate-400 text-center mt-4">После регистрации откроется личный кабинет. Секретную ссылку нужно сохранить.</p>
+          <p class="text-xs text-slate-400 text-center mt-4">Сейчас используется тестовый платёж СБП. Деньги не списываются.</p>
         </form>
       </div>
     </div>
@@ -348,6 +356,8 @@
     var TOKEN_KEY = "topvpn_account_token";
     var NAME_KEY = "topvpn_account_username";
     var usernameInput = document.getElementById("siteUsername");
+    var passwordInput = document.getElementById("sitePassword");
+    var passwordBlock = document.getElementById("sitePasswordBlock");
     var usernameHint = document.getElementById("siteUsernameHint");
     var submitButton = document.getElementById("registrationSubmit");
     var message = document.getElementById("registrationMessage");
@@ -417,7 +427,8 @@
     }
 
     function updateSubmit() {
-      submitButton.disabled = !(checkedUsername && selectedMonths && selectedPlatform);
+      var passwordReady = token || passwordInput.value.length >= 8;
+      submitButton.disabled = !(checkedUsername && selectedMonths && selectedPlatform && passwordReady);
     }
 
     function renderPlatformHelp(platform) {
@@ -479,6 +490,7 @@
       window.clearTimeout(timer);
       timer = window.setTimeout(function () { checkUsername(value); }, 350);
     });
+    passwordInput.addEventListener("input", updateSubmit);
 
     function selectChoice(containerId, attribute, value) {
       var container = document.getElementById(containerId);
@@ -519,6 +531,7 @@
         accountUsername = data.account.username;
         checkedUsername = accountUsername;
         usernameInput.value = accountUsername;
+        passwordBlock.classList.add("hidden");
         localStorage.setItem(NAME_KEY, accountUsername);
         setHint("Это ваше имя", "success");
         updateSubmit();
@@ -538,7 +551,7 @@
       var username = normalizeUsername(usernameInput.value);
       if (!username || username !== checkedUsername || !selectedMonths || !selectedPlatform) return;
       submitButton.disabled = true;
-      submitButton.textContent = "Создаём кабинет…";
+      submitButton.textContent = "Готовим оплату…";
       try {
         if (token && username !== accountUsername) {
           var renamed = await request("/account/username", {
@@ -551,7 +564,7 @@
           var created = await request("/accounts", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username: username })
+            body: JSON.stringify({ username: username, password: passwordInput.value })
           });
           token = created.token;
           accountUsername = created.account.username;
@@ -559,15 +572,21 @@
         }
         localStorage.setItem(NAME_KEY, accountUsername);
         localStorage.setItem("topvpn_onboarding", JSON.stringify({ username: accountUsername, months: selectedMonths, platform: selectedPlatform }));
-        window.location.href = "/account/#" + encodeURIComponent(token);
+        var payment = await request("/payments", {
+          method: "POST",
+          headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
+          body: JSON.stringify({ months: Number(selectedMonths), platform: selectedPlatform })
+        });
+        if (!payment.payUrl) throw new Error("missing_pay_url");
+        window.location.assign(payment.payUrl);
       } catch (error) {
         if (error.code === "username_taken") {
           checkedUsername = "";
-          setHint("Это имя только что заняли. Выберите другое", "error");
+          setHint("Это имя уже зарегистрировано. Войдите через кнопку «Кабинет»", "error");
         } else {
-          showMessage("Не удалось создать кабинет. Попробуйте ещё раз", "error");
+          showMessage(error.message || "Не удалось открыть оплату. Попробуйте ещё раз", "error");
         }
-        submitButton.textContent = "Продолжить";
+        submitButton.textContent = "Перейти к оплате";
         updateSubmit();
       }
     });
