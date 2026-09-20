@@ -554,6 +554,7 @@
         checkedUsername = accountUsername;
         usernameInput.value = accountUsername;
         observedUsername = accountUsername;
+        usernameInput.readOnly = true;
         passwordBlock.classList.add("hidden");
         localStorage.setItem(NAME_KEY, accountUsername);
         setHint("Это ваше имя", "success");
@@ -605,14 +606,7 @@
       updateSubmit();
       submitButton.textContent = "Готовим оплату…";
       try {
-        if (token && username !== accountUsername) {
-          var renamed = await request("/account/username", {
-            method: "PATCH",
-            headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
-            body: JSON.stringify({ username: username })
-          });
-          accountUsername = renamed.account.username;
-        } else if (!token) {
+        if (!token) {
           var created = await request("/accounts", {
             method: "POST",
             headers: { "Content-Type": "application/json" },

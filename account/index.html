@@ -152,13 +152,8 @@
           <p>После покупки здесь появятся срок подписки, трафик и кнопка подключения.</p>
         </div>
         <div class="panel">
-          <h2>Имя аккаунта</h2>
-          <p>Можно изменить, если новое имя свободно.</p>
-          <button class="button secondary" id="renameButton" type="button">Изменить имя</button>
-          <form class="inline-form hidden" id="renameForm">
-            <input id="newUsername" type="text" autocomplete="username" minlength="3" maxlength="24" spellcheck="false" placeholder="Новое имя аккаунта" required />
-            <button class="button" id="saveUsernameButton" type="submit">Сохранить имя</button>
-          </form>
+          <h2>Безопасность</h2>
+          <p>Измените пароль для входа в личный кабинет.</p>
           <button class="button secondary" id="changePasswordButton" type="button">Изменить пароль</button>
           <form class="inline-form hidden" id="passwordForm">
             <input id="currentPassword" type="password" autocomplete="current-password" placeholder="Текущий пароль" required />
@@ -340,28 +335,6 @@
       }
       history.replaceState(null, "", "/account/");
     }
-    async function renameAccount(event) {
-      event.preventDefault();
-      var input = document.getElementById("newUsername");
-      var next = normalizeUsername(input.value);
-      if (!/^[a-z][a-z0-9_]{2,23}$/.test(next)) { toast("Проверьте формат имени"); return; }
-      var button = document.getElementById("saveUsernameButton");
-      button.disabled = true;
-      button.textContent = "Сохраняем…";
-      try {
-        var data = await request("/account/username", {
-          method: "PATCH", headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
-          body: JSON.stringify({ username: next })
-        });
-        document.getElementById("accountName").textContent = "@" + data.account.username;
-        document.getElementById("renameForm").classList.add("hidden");
-        toast("Имя изменено");
-      } catch (error) { toast(error.code === "username_taken" ? "Это имя уже занято" : "Не удалось изменить имя"); }
-      finally {
-        button.disabled = false;
-        button.textContent = "Сохранить имя";
-      }
-    }
     async function changePassword(event) {
       event.preventDefault();
       var currentPassword = document.getElementById("currentPassword");
@@ -387,14 +360,6 @@
         button.textContent = "Сохранить пароль";
       }
     }
-    document.getElementById("renameButton").addEventListener("click", function () {
-      var form = document.getElementById("renameForm");
-      var input = document.getElementById("newUsername");
-      input.value = document.getElementById("accountName").textContent.replace(/^@/, "");
-      form.classList.toggle("hidden");
-      if (!form.classList.contains("hidden")) input.focus();
-    });
-    document.getElementById("renameForm").addEventListener("submit", renameAccount);
     document.getElementById("changePasswordButton").addEventListener("click", function () {
       document.getElementById("passwordForm").classList.toggle("hidden");
     });
