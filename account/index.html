@@ -79,6 +79,9 @@
     .panel h2 { margin: 0 0 8px; font-size: 17px; }
     .panel p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.55; }
     .panel .button { margin-top: 18px; min-height: 44px; width: 100%; font-size: 14px; }
+    .password-form { margin-top: 14px; }
+    .password-form input { min-height: 46px; margin-top: 9px; padding: 0 14px; }
+    .password-form .button { margin-top: 10px; }
     .empty { grid-column: 1 / -1; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: linear-gradient(145deg, #fff, #f8fbff); }
     .empty-icon { margin-bottom: 12px; font-size: 30px; }
     .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
@@ -152,6 +155,13 @@
           <h2>Имя аккаунта</h2>
           <p>Можно изменить, если новое имя свободно.</p>
           <button class="button secondary" id="renameButton" type="button">Изменить имя</button>
+          <button class="button secondary" id="changePasswordButton" type="button">Изменить пароль</button>
+          <form class="password-form hidden" id="passwordForm">
+            <input id="currentPassword" type="password" autocomplete="current-password" placeholder="Текущий пароль" required />
+            <input id="newPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" placeholder="Новый пароль — от 8 символов" required />
+            <input id="confirmPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" placeholder="Повторите новый пароль" required />
+            <button class="button" id="savePasswordButton" type="submit">Сохранить пароль</button>
+          </form>
         </div>
         <div class="panel">
           <h2>Доступ к кабинету</h2>
@@ -341,7 +351,36 @@
         toast("Имя изменено");
       } catch (error) { toast(error.code === "username_taken" ? "Это имя уже занято" : "Не удалось изменить имя"); }
     }
+    async function changePassword(event) {
+      event.preventDefault();
+      var currentPassword = document.getElementById("currentPassword");
+      var newPassword = document.getElementById("newPassword");
+      var confirmPassword = document.getElementById("confirmPassword");
+      if (newPassword.value.length < 8) { toast("Новый пароль должен содержать не менее 8 символов"); return; }
+      if (newPassword.value !== confirmPassword.value) { toast("Новые пароли не совпадают"); return; }
+      var button = document.getElementById("savePasswordButton");
+      button.disabled = true;
+      button.textContent = "Сохраняем…";
+      try {
+        await request("/account/password", {
+          method: "PATCH", headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
+          body: JSON.stringify({ currentPassword: currentPassword.value, newPassword: newPassword.value })
+        });
+        document.getElementById("passwordForm").reset();
+        document.getElementById("passwordForm").classList.add("hidden");
+        toast("Пароль изменён");
+      } catch (error) {
+        toast(error.code === "invalid_current_password" ? "Неверный текущий пароль" : (error.message || "Не удалось изменить пароль"));
+      } finally {
+        button.disabled = false;
+        button.textContent = "Сохранить пароль";
+      }
+    }
     document.getElementById("renameButton").addEventListener("click", renameAccount);
+    document.getElementById("changePasswordButton").addEventListener("click", function () {
+      document.getElementById("passwordForm").classList.toggle("hidden");
+    });
+    document.getElementById("passwordForm").addEventListener("submit", changePassword);
     document.getElementById("forgetButton").addEventListener("click", function () {
       localStorage.removeItem(TOKEN_KEY);
       token = "";
