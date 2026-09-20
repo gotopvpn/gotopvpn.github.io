@@ -125,10 +125,11 @@
           </fieldset>
 
           <div id="registrationMessage" class="hidden mb-4 rounded-2xl px-4 py-3 text-sm font-semibold" role="status"></div>
-          <button id="registrationSubmit" type="submit"
+          <button id="registrationSubmit" type="submit" disabled
                   class="w-full h-14 rounded-2xl bg-blue-600 text-white font-extrabold disabled:opacity-45 disabled:cursor-not-allowed hover:bg-blue-700 transition">
             Перейти к оплате
           </button>
+          <p id="registrationReadiness" class="text-xs text-slate-500 text-center mt-3">Осталось заполнить: имя, пароль, тариф, устройство</p>
           <p class="text-xs text-slate-400 text-center mt-4">Сейчас используется тестовый платёж СБП. Деньги не списываются.</p>
         </form>
       </div>
@@ -360,6 +361,7 @@
     var passwordBlock = document.getElementById("sitePasswordBlock");
     var usernameHint = document.getElementById("siteUsernameHint");
     var submitButton = document.getElementById("registrationSubmit");
+    var readiness = document.getElementById("registrationReadiness");
     var message = document.getElementById("registrationMessage");
     var token = "";
     var accountUsername = "";
@@ -369,6 +371,7 @@
     var isSubmitting = false;
     var timer = 0;
     var pendingCheck = null;
+    var observedUsername = "";
 
     var PLATFORM_APPS = {
       ios:     { name: "DefaultVPN", url: "https://apps.apple.com/app/defaultvpn/id6744725017" },
@@ -428,7 +431,15 @@
     }
 
     function updateSubmit() {
-      submitButton.disabled = isSubmitting;
+      var username = normalizeUsername(usernameInput.value);
+      var missing = [];
+      if (!username || checkedUsername !== username) missing.push("свободное имя");
+      if (!token && passwordInput.value.length < 8) missing.push("пароль");
+      if (!selectedMonths) missing.push("тариф");
+      if (!selectedPlatform) missing.push("устройство");
+      submitButton.disabled = isSubmitting || missing.length > 0;
+      readiness.textContent = missing.length ? "Осталось заполнить: " + missing.join(", ") : "Всё готово — можно перейти к оплате";
+      readiness.className = "text-xs text-center mt-3 " + (missing.length ? "text-slate-500" : "text-green-700 font-semibold");
     }
 
     function renderPlatformHelp(platform) {
@@ -484,13 +495,24 @@
       updateSubmit();
     }
 
-    usernameInput.addEventListener("input", function () {
+    function syncUsernameField() {
       var value = normalizeUsername(usernameInput.value);
       if (usernameInput.value !== value) usernameInput.value = value;
+      if (value === observedUsername) {
+        updateSubmit();
+        return;
+      }
+      observedUsername = value;
       window.clearTimeout(timer);
       timer = window.setTimeout(function () { checkUsername(value); }, 350);
-    });
+      updateSubmit();
+    }
+
+    usernameInput.addEventListener("input", syncUsernameField);
+    usernameInput.addEventListener("change", syncUsernameField);
+    usernameInput.addEventListener("blur", syncUsernameField);
     passwordInput.addEventListener("input", updateSubmit);
+    passwordInput.addEventListener("change", updateSubmit);
 
     function selectChoice(containerId, attribute, value) {
       var container = document.getElementById(containerId);
@@ -531,6 +553,7 @@
         accountUsername = data.account.username;
         checkedUsername = accountUsername;
         usernameInput.value = accountUsername;
+        observedUsername = accountUsername;
         passwordBlock.classList.add("hidden");
         localStorage.setItem(NAME_KEY, accountUsername);
         setHint("Это ваше имя", "success");
@@ -621,7 +644,12 @@
       }
     });
 
-    loadExistingAccount();
+    loadExistingAccount().finally(function () {
+      syncUsernameField();
+      updateSubmit();
+      window.setTimeout(syncUsernameField, 250);
+      window.setTimeout(syncUsernameField, 1000);
+    });
   })();
   </script>
 </body>
