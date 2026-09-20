@@ -215,7 +215,61 @@
       document.getElementById("pageTitle").textContent = "Ваш TopVPN";
       document.getElementById("pageLead").textContent = "Управляйте подключениями и подпиской в одном месте.";
       document.getElementById("accountName").textContent = "@" + account.username;
+      renderSubscriptions(account.subscriptions || []);
       setView("account");
+    }
+    function renderSubscriptions(subscriptions) {
+      var panel = document.getElementById("subscriptionsPanel");
+      if (!subscriptions.length) {
+        panel.className = "panel empty";
+        panel.innerHTML = '<div class="empty-icon">🛡️</div><h2>Подключений пока нет</h2><p>После покупки здесь появятся срок подписки и кнопка подключения.</p>';
+        return;
+      }
+      var subscription = subscriptions[0];
+      var expires = new Date(subscription.expiresAt * 1000).toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" });
+      panel.className = "panel";
+      panel.innerHTML = "";
+      var title = document.createElement("h2");
+      title.textContent = subscription.status === "active" ? "Подключение активно" : "Подключение приостановлено";
+      var description = document.createElement("p");
+      description.textContent = "Доступ оплачен до " + expires + ".";
+      panel.appendChild(title);
+      panel.appendChild(description);
+      if (subscription.vpnLink) {
+        var copyButton = document.createElement("button");
+        copyButton.className = "button secondary";
+        copyButton.type = "button";
+        copyButton.textContent = "Скопировать ключ подключения";
+        copyButton.addEventListener("click", function () { copyText(subscription.vpnLink, "Ключ скопирован"); });
+        panel.appendChild(copyButton);
+      }
+      if (subscription.config) {
+        var downloadButton = document.createElement("button");
+        downloadButton.className = "button secondary";
+        downloadButton.type = "button";
+        downloadButton.textContent = "Скачать файл настроек";
+        downloadButton.addEventListener("click", function () { downloadConfig(subscription.config); });
+        panel.appendChild(downloadButton);
+      }
+    }
+    async function copyText(value, successMessage) {
+      try {
+        await navigator.clipboard.writeText(value);
+        toast(successMessage);
+      } catch (_) {
+        window.prompt("Скопируйте ключ", value);
+      }
+    }
+    function downloadConfig(config) {
+      var blob = new Blob([config], { type: "text/plain;charset=utf-8" });
+      var url = URL.createObjectURL(blob);
+      var link = document.createElement("a");
+      link.href = url;
+      link.download = "TopVPN.conf";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
     }
     async function loadAccount() {
       try {
@@ -263,6 +317,10 @@
         var data = await request("/payments/" + encodeURIComponent(paymentId), { headers: { "Authorization": "Bearer " + token } });
         var labels = { paid: "Тестовая оплата прошла", created: "Ожидаем тестовую оплату", processing: "Тестовая оплата обрабатывается", expired: "Время оплаты истекло", canceled: "Оплата отменена" };
         toast(labels[data.payment.status] || "Статус оплаты: " + data.payment.status);
+        if (data.payment.fulfilled) {
+          var refreshed = await request("/account", { headers: { "Authorization": "Bearer " + token } });
+          renderAccount(refreshed.account);
+        }
       } catch (_) {
         toast("Не удалось проверить статус оплаты");
       }
