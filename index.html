@@ -125,7 +125,7 @@
           </fieldset>
 
           <div id="registrationMessage" class="hidden mb-4 rounded-2xl px-4 py-3 text-sm font-semibold" role="status"></div>
-          <button id="registrationSubmit" type="submit" disabled
+          <button id="registrationSubmit" type="submit"
                   class="w-full h-14 rounded-2xl bg-blue-600 text-white font-extrabold disabled:opacity-45 disabled:cursor-not-allowed hover:bg-blue-700 transition">
             Перейти к оплате
           </button>
@@ -366,6 +366,7 @@
     var checkedUsername = "";
     var selectedMonths = "";
     var selectedPlatform = "";
+    var isSubmitting = false;
     var timer = 0;
     var pendingCheck = null;
 
@@ -427,8 +428,7 @@
     }
 
     function updateSubmit() {
-      var passwordReady = token || passwordInput.value.length >= 8;
-      submitButton.disabled = !(checkedUsername && selectedMonths && selectedPlatform && passwordReady);
+      submitButton.disabled = isSubmitting;
     }
 
     function renderPlatformHelp(platform) {
@@ -549,8 +549,37 @@
       event.preventDefault();
       hideMessage();
       var username = normalizeUsername(usernameInput.value);
-      if (!username || username !== checkedUsername || !selectedMonths || !selectedPlatform) return;
-      submitButton.disabled = true;
+      if (!username) {
+        showMessage("Введите имя аккаунта", "error");
+        usernameInput.focus();
+        return;
+      }
+      if (!validUsername(username)) {
+        showMessage("Проверьте формат имени аккаунта", "error");
+        usernameInput.focus();
+        return;
+      }
+      if (username !== checkedUsername) {
+        showMessage("Дождитесь проверки имени или выберите свободное имя", "error");
+        return;
+      }
+      if (!token && passwordInput.value.length < 8) {
+        showMessage("Введите пароль не короче 8 символов", "error");
+        passwordInput.focus();
+        return;
+      }
+      if (!selectedMonths) {
+        showMessage("Выберите тариф", "error");
+        document.getElementById("registrationTariffs").scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+      if (!selectedPlatform) {
+        showMessage("Выберите устройство", "error");
+        document.getElementById("registrationPlatforms").scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+      isSubmitting = true;
+      updateSubmit();
       submitButton.textContent = "Готовим оплату…";
       try {
         if (token && username !== accountUsername) {
@@ -587,6 +616,7 @@
           showMessage(error.message || "Не удалось открыть оплату. Попробуйте ещё раз", "error");
         }
         submitButton.textContent = "Перейти к оплате";
+        isSubmitting = false;
         updateSubmit();
       }
     });
