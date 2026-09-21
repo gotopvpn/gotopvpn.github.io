@@ -180,7 +180,7 @@
   (function () {
     "use strict";
 
-    var API = "/api/account/v1";
+    var API = location.hostname === "gotopvpn.github.io" ? "https://topvpn.site/api/account/v1" : "/api/account/v1";
     var TOKEN_KEY = "topvpn_account_token";
     var token = "";
     var loadingView = document.getElementById("loadingView");
