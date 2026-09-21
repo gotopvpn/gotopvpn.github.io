@@ -309,7 +309,7 @@
             Можно попробовать перед покупкой?
             <span class="text-blue-600 group-open:rotate-45 transition">+</span>
           </summary>
-          <p class="text-slate-600 mt-3 leading-relaxed">Да. Откройте бота напрямую — при первом запуске выдаётся пробный период на 3 дня.</p>
+          <p class="text-slate-600 mt-3 leading-relaxed">Да. Напишите в поддержку на сайте — поможем получить пробный доступ на 3 дня.</p>
         </details>
 
         <details class="p-4 rounded-2xl border border-slate-200 group">
@@ -317,7 +317,7 @@
             Что-то не работает — куда писать?
             <span class="text-blue-600 group-open:rotate-45 transition">+</span>
           </summary>
-          <p class="text-slate-600 mt-3 leading-relaxed">В поддержку прямо в Telegram — отвечаем в том же чате. Ссылка ниже, в разделе «Контакты».</p>
+          <p class="text-slate-600 mt-3 leading-relaxed">Откройте поддержку на сайте. Ответ и вся история обращения останутся доступны на странице поддержки.</p>
         </details>
       </div>
     </div>
@@ -326,12 +326,12 @@
   <section id="contacts" class="py-6 md:py-10 px-6">
     <div class="container mx-auto max-w-3xl text-center">
       <h2 class="text-3xl font-bold mb-4">Контакты</h2>
-      <p class="text-slate-500 mb-6">Подключение и продление — в кабинете. Поддержка остаётся в Telegram.</p>
+      <p class="text-slate-500 mb-6">Подключение и продление — в кабинете. Поддержка доступна прямо на сайте.</p>
 
       <div class="flex flex-col md:flex-row justify-center gap-4">
         <a href="#registration"
            class="bg-blue-600 text-white font-bold px-10 py-4 rounded-2xl hover:bg-blue-700 transition">Подключить TopVPN</a>
-        <a href="https://t.me/GetTopVPN_bot?start=support" target="_blank" rel="noopener"
+        <a href="/support/"
            class="border-2 border-blue-600 text-blue-600 font-bold px-10 py-4 rounded-2xl hover:bg-blue-50 transition">Написать в поддержку</a>
       </div>
     </div>
@@ -343,7 +343,7 @@
       <div class="flex flex-wrap justify-center gap-6 mb-6 text-sm">
         <a href="https://telegra.ph/POLITIKA-KONFIDENCIALNOSTI-08-12-99" target="_blank" rel="noopener" class="hover:text-white transition">Политика конфиденциальности</a>
         <a href="https://telegra.ph/PUBLICHNAYA-OFERTA-08-12-15" target="_blank" rel="noopener" class="hover:text-white transition">Пользовательское соглашение</a>
-        <a href="https://t.me/GetTopVPN_bot?start=support" target="_blank" rel="noopener" class="hover:text-white transition">Поддержка</a>
+        <a href="/support/" class="hover:text-white transition">Поддержка</a>
         <a href="/account/" class="hover:text-white transition">Личный кабинет</a>
       </div>
       <p class="text-xs">TopVPN — сервис для свободного доступа в интернет.</p>
@@ -354,7 +354,7 @@
   (function () {
     "use strict";
 
-    var API = "https://vpntop.duckdns.org/api/account/v1";
+    var API = "/api/account/v1";
     var TOKEN_KEY = "topvpn_account_token";
     var NAME_KEY = "topvpn_account_username";
     var usernameInput = document.getElementById("siteUsername");
