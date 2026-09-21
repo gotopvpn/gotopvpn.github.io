@@ -79,6 +79,20 @@
     .panel h2 { margin: 0 0 8px; font-size: 17px; }
     .panel p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.55; }
     .panel .button { margin-top: 18px; min-height: 44px; width: 100%; font-size: 14px; }
+    .devices-panel { grid-column: 1 / -1; }
+    .devices-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 18px; }
+    .devices-head .button { width: auto; margin: 0; }
+    .device-list { display: grid; gap: 12px; }
+    .device-card { padding: 18px; border: 1px solid var(--line); border-radius: 18px; background: #f8fafc; }
+    .device-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .device-title strong { font-size: 17px; }
+    .device-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .device-actions .button { width: auto; min-height: 40px; margin: 0; padding: 0 14px; }
+    .device-actions .danger { background: #fee2e2; color: var(--danger); }
+    .device-actions .danger:hover { background: #fecaca; }
+    .device-form { display: flex; gap: 10px; margin: 14px 0 18px; }
+    .device-form input { min-height: 48px; padding: 0 14px; }
+    .device-form .button { flex: 0 0 auto; width: auto; min-height: 48px; margin: 0; }
     .inline-form { margin-top: 14px; }
     .inline-form input { min-height: 46px; margin-top: 9px; padding: 0 14px; }
     .inline-form .button { margin-top: 10px; }
@@ -96,6 +110,8 @@
       .grid { grid-template-columns: 1fr; }
       .account-head { display: block; }
       .account-head .button { margin-top: 16px; width: 100%; }
+      .devices-head, .device-form { display: block; }
+      .devices-head .button, .device-form .button { width: 100%; margin-top: 10px; }
     }
   </style>
 </head>
@@ -142,7 +158,7 @@
           <div class="status">Кабинет активен</div>
           <div class="account-name" id="accountName"></div>
         </div>
-        <a class="button secondary" href="/#registration">Купить подписку</a>
+        <a class="button secondary" href="/#registration">Купить или продлить</a>
       </div>
 
       <div class="grid">
@@ -224,42 +240,86 @@
       document.getElementById("pageTitle").textContent = "Ваш TopVPN";
       document.getElementById("pageLead").textContent = "Управляйте подключениями и подпиской в одном месте.";
       document.getElementById("accountName").textContent = "@" + account.username;
-      renderSubscriptions(account.subscriptions || []);
+      renderDevices(account);
       setView("account");
     }
-    function renderSubscriptions(subscriptions) {
+    function renderDevices(account) {
       var panel = document.getElementById("subscriptionsPanel");
-      if (!subscriptions.length) {
-        panel.className = "panel empty";
-        panel.innerHTML = '<div class="empty-icon">🛡️</div><h2>Подключений пока нет</h2><p>После покупки здесь появятся срок подписки и кнопка подключения.</p>';
-        return;
-      }
-      var subscription = subscriptions[0];
-      var expires = new Date(subscription.expiresAt * 1000).toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" });
-      panel.className = "panel";
+      var devices = account.devices || [];
+      var limit = account.deviceLimit || 5;
+      var activeSubscription = Number(account.subscriptionExpiresAt || 0) > Date.now() / 1000;
+      panel.className = "panel devices-panel";
       panel.innerHTML = "";
-      var title = document.createElement("h2");
-      title.textContent = subscription.status === "active" ? "Подключение активно" : "Подключение приостановлено";
-      var description = document.createElement("p");
-      description.textContent = "Доступ оплачен до " + expires + ".";
-      panel.appendChild(title);
-      panel.appendChild(description);
-      if (subscription.vpnLink) {
-        var copyButton = document.createElement("button");
-        copyButton.className = "button secondary";
-        copyButton.type = "button";
-        copyButton.textContent = "Скопировать ключ подключения";
-        copyButton.addEventListener("click", function () { copyText(subscription.vpnLink, "Ключ скопирован"); });
-        panel.appendChild(copyButton);
+      var head = document.createElement("div");
+      head.className = "devices-head";
+      var heading = document.createElement("div");
+      var title = document.createElement("h2"); title.textContent = "Мои подключения";
+      var counter = document.createElement("p"); counter.textContent = devices.length + " из " + limit + " подключений";
+      heading.append(title, counter);
+      var addButton = document.createElement("button");
+      addButton.className = "button secondary"; addButton.type = "button"; addButton.textContent = "+ Добавить подключение";
+      addButton.disabled = devices.length >= limit || !activeSubscription;
+      head.append(heading, addButton); panel.appendChild(head);
+
+      var form = document.createElement("form"); form.className = "device-form hidden";
+      var input = document.createElement("input"); input.maxLength = 40; input.required = true; input.placeholder = "Например, Домашний MacBook";
+      var save = document.createElement("button"); save.className = "button"; save.type = "submit"; save.textContent = "Создать";
+      form.append(input, save); panel.appendChild(form);
+      addButton.addEventListener("click", function () { form.classList.toggle("hidden"); if (!form.classList.contains("hidden")) input.focus(); });
+      form.addEventListener("submit", async function (event) {
+        event.preventDefault(); var name = input.value.trim(); if (!name) return;
+        save.disabled = true; save.textContent = "Создаём…";
+        try {
+          var data = await request("/devices", {method:"POST",headers:{"Authorization":"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify({name:name})});
+          renderAccount(data.account); toast("Подключение создано");
+        } catch (error) { toast(error.message || "Не удалось создать подключение"); }
+        finally { save.disabled = false; save.textContent = "Создать"; }
+      });
+
+      if (!activeSubscription) {
+        var notice = document.createElement("p"); notice.textContent = "Подписка не активна. Оплатите или продлите её, чтобы создавать подключения."; panel.appendChild(notice);
       }
-      if (subscription.config) {
-        var downloadButton = document.createElement("button");
-        downloadButton.className = "button secondary";
-        downloadButton.type = "button";
-        downloadButton.textContent = "Скачать файл настроек";
-        downloadButton.addEventListener("click", function () { downloadConfig(subscription.config); });
-        panel.appendChild(downloadButton);
+      if (!devices.length) {
+        var empty = document.createElement("p"); empty.textContent = activeSubscription ? "Создайте первое подключение." : "После оплаты здесь появится первое подключение."; panel.appendChild(empty); return;
       }
+      var list = document.createElement("div"); list.className = "device-list"; panel.appendChild(list);
+      devices.forEach(function (device) { list.appendChild(deviceCard(device)); });
+    }
+    function deviceCard(device) {
+      var card = document.createElement("article"); card.className = "device-card";
+      var row = document.createElement("div"); row.className = "device-title";
+      var name = document.createElement("strong"); name.textContent = device.name;
+      var state = document.createElement("span"); state.className = "status"; state.textContent = device.status === "active" ? "Активно" : "Приостановлено";
+      row.append(name, state); card.appendChild(row);
+      var expiry = document.createElement("p");
+      expiry.textContent = device.expiresAt ? "Доступ до " + new Date(device.expiresAt * 1000).toLocaleDateString("ru-RU", {day:"numeric",month:"long",year:"numeric"}) : "Срок пока не задан";
+      card.appendChild(expiry);
+      var actions = document.createElement("div"); actions.className = "device-actions";
+      if (device.vpnLink) actions.appendChild(actionButton("Скопировать ключ", function () { copyText(device.vpnLink, "Ключ скопирован"); }));
+      if (device.config) actions.appendChild(actionButton("Скачать файл", function () { downloadConfig(device.config, device.name); }));
+      var rename = actionButton("Переименовать", function () { showRenameForm(card, device); }); rename.classList.add("secondary"); actions.appendChild(rename);
+      var remove = actionButton("Удалить", async function () {
+        if (!window.confirm("Удалить подключение «" + device.name + "»? Этот ключ перестанет работать.")) return;
+        remove.disabled = true;
+        try { var data = await request("/devices/"+encodeURIComponent(device.id),{method:"DELETE",headers:{"Authorization":"Bearer "+token}}); renderAccount(data.account); toast("Подключение удалено"); }
+        catch (error) { remove.disabled = false; toast(error.message || "Не удалось удалить подключение"); }
+      }); remove.classList.add("danger"); actions.appendChild(remove);
+      card.appendChild(actions); return card;
+    }
+    function actionButton(label, handler) {
+      var button = document.createElement("button"); button.className = "button secondary"; button.type = "button"; button.textContent = label; button.addEventListener("click", handler); return button;
+    }
+    function showRenameForm(card, device) {
+      if (card.querySelector(".rename-form")) return;
+      var form = document.createElement("form"); form.className = "device-form rename-form";
+      var input = document.createElement("input"); input.value = device.name; input.maxLength = 40; input.required = true;
+      var save = document.createElement("button"); save.className = "button"; save.type = "submit"; save.textContent = "Сохранить";
+      form.append(input, save); card.appendChild(form); input.focus(); input.select();
+      form.addEventListener("submit", async function (event) {
+        event.preventDefault(); save.disabled = true;
+        try { var data = await request("/devices/"+encodeURIComponent(device.id),{method:"PATCH",headers:{"Authorization":"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify({name:input.value.trim()})}); renderAccount(data.account); toast("Название сохранено"); }
+        catch (error) { save.disabled = false; toast(error.message || "Не удалось переименовать подключение"); }
+      });
     }
     async function copyText(value, successMessage) {
       try {
@@ -269,12 +329,12 @@
         window.prompt("Скопируйте ключ", value);
       }
     }
-    function downloadConfig(config) {
+    function downloadConfig(config, name) {
       var blob = new Blob([config], { type: "text/plain;charset=utf-8" });
       var url = URL.createObjectURL(blob);
       var link = document.createElement("a");
       link.href = url;
-      link.download = "TopVPN.conf";
+      link.download = "TopVPN-" + String(name || "connection").replace(/[^a-zA-Z0-9а-яА-ЯёЁ_-]+/g, "-") + ".conf";
       document.body.appendChild(link);
       link.click();
       link.remove();

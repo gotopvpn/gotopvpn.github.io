@@ -59,7 +59,7 @@
         <div class="mb-7">
           <div class="text-sm font-extrabold uppercase tracking-widest text-blue-600 mb-2">Регистрация</div>
           <h2 class="text-3xl font-extrabold mb-3">Создайте подключение</h2>
-          <p class="text-slate-500">Придумайте имя аккаунта, выберите срок и устройство.</p>
+          <p class="text-slate-500">Придумайте имя аккаунта, назовите первое подключение и выберите срок.</p>
         </div>
 
         <form id="registrationForm" novalidate>
@@ -83,6 +83,14 @@
             <div class="min-h-5 mt-2 text-sm text-slate-500">Понадобится для входа в кабинет с другого устройства</div>
           </div>
 
+          <div class="mb-7" id="deviceNameBlock">
+            <label for="deviceName" class="block font-bold mb-2">Название подключения</label>
+            <input id="deviceName" type="text" maxlength="40" value="Основное подключение"
+                   placeholder="Например, Мой iPhone"
+                   class="w-full h-14 rounded-2xl border-2 border-slate-200 px-4 outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-100 transition" />
+            <div class="min-h-5 mt-2 text-sm text-slate-500">Поможет отличать ключи разных устройств</div>
+          </div>
+
           <fieldset class="mb-7">
             <legend class="font-bold mb-3">Тариф</legend>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="registrationTariffs">
@@ -101,36 +109,13 @@
             </div>
           </fieldset>
 
-          <fieldset class="mb-7">
-            <legend class="font-bold mb-3">Устройство</legend>
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-3" id="registrationPlatforms">
-              <button type="button" class="onboarding-choice rounded-2xl border-2 border-slate-200 p-3 font-bold" data-platform="ios">📱 iPhone</button>
-              <button type="button" class="onboarding-choice rounded-2xl border-2 border-slate-200 p-3 font-bold" data-platform="android">🤖 Android</button>
-              <button type="button" class="onboarding-choice rounded-2xl border-2 border-slate-200 p-3 font-bold" data-platform="windows">🪟 Windows</button>
-              <button type="button" class="onboarding-choice rounded-2xl border-2 border-slate-200 p-3 font-bold" data-platform="macos">🍎 macOS</button>
-              <button type="button" class="onboarding-choice rounded-2xl border-2 border-slate-200 p-3 font-bold col-span-2 md:col-span-1" data-platform="linux">🐧 Linux</button>
-            </div>
-            <div id="registrationPlatformHelp" class="hidden mt-4 rounded-2xl border border-blue-100 bg-blue-50 p-5">
-              <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                <div>
-                  <div class="text-sm font-extrabold text-blue-700" id="registrationAppName"></div>
-                  <ol class="mt-3 ml-5 list-decimal space-y-2 text-sm leading-relaxed text-slate-700" id="registrationAppSteps"></ol>
-                  <p class="hidden mt-3 text-sm font-semibold text-amber-800" id="registrationAppNote"></p>
-                </div>
-                <a id="registrationAppLink" href="#" target="_blank" rel="noopener"
-                   class="shrink-0 inline-flex min-h-11 items-center justify-center rounded-xl bg-white border border-blue-200 px-5 font-bold text-blue-700 hover:bg-blue-100 transition">
-                  Установить приложение
-                </a>
-              </div>
-            </div>
-          </fieldset>
 
           <div id="registrationMessage" class="hidden mb-4 rounded-2xl px-4 py-3 text-sm font-semibold" role="status"></div>
           <button id="registrationSubmit" type="submit" disabled
                   class="w-full h-14 rounded-2xl bg-blue-600 text-white font-extrabold disabled:opacity-45 disabled:cursor-not-allowed hover:bg-blue-700 transition">
             Перейти к оплате
           </button>
-          <p id="registrationReadiness" class="text-xs text-slate-500 text-center mt-3">Осталось заполнить: имя, пароль, тариф, устройство</p>
+          <p id="registrationReadiness" class="text-xs text-slate-500 text-center mt-3">Осталось заполнить: имя, пароль, название подключения, тариф</p>
           <p class="text-xs text-slate-400 text-center mt-4">Сейчас используется тестовый платёж СБП. Деньги не списываются.</p>
         </form>
       </div>
@@ -146,7 +131,7 @@
       <div class="p-6 bg-white rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition">
         <div class="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center text-3xl mb-4">💳</div>
         <h3 class="text-xl font-bold mb-3">Выберите тариф</h3>
-        <p class="text-slate-600 leading-relaxed">Придумайте имя аккаунта, выберите срок и устройство прямо на сайте.</p>
+        <p class="text-slate-600 leading-relaxed">Придумайте имя аккаунта, назовите первое подключение и выберите срок.</p>
       </div>
       <div class="p-6 bg-white rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition">
         <div class="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center text-3xl mb-4">📲</div>
@@ -185,7 +170,7 @@
           <div class="text-3xl mb-4">🤖</div>
           <h3 class="text-xl font-extrabold mb-1">Android</h3>
           <div class="text-slate-500 mb-4">AmneziaWG</div>
-          <p class="text-slate-600 text-sm mb-6 flex-grow">Откройте файл настроек из кабинета или отсканируйте QR-код.</p>
+          <p class="text-slate-600 text-sm mb-6 flex-grow">Скачайте файл настроек из кабинета и откройте его в приложении.</p>
           <a class="w-full text-center py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition"
              href="https://play.google.com/store/apps/details?id=org.amnezia.awg" target="_blank" rel="noopener">Google Play</a>
         </div>
@@ -221,7 +206,7 @@
           <div class="text-3xl mb-4">💬</div>
           <h3 class="text-xl font-extrabold mb-1">Не знаете, что выбрать?</h3>
           <div class="text-slate-500 mb-4">Поможем</div>
-          <p class="text-slate-600 text-sm mb-6 flex-grow">Выберите устройство при регистрации — кабинет покажет готовую инструкцию.</p>
+          <p class="text-slate-600 text-sm mb-6 flex-grow">Откройте раздел поддержки — поможем подобрать приложение и подключиться.</p>
           <a class="w-full text-center py-3 rounded-xl border-2 border-blue-600 text-blue-600 font-bold hover:bg-white transition"
              href="#registration">Открыть TopVPN</a>
         </div>
@@ -270,7 +255,7 @@
       </div>
 
       <p class="text-center text-slate-500 mt-6">
-        Оплата через СБП. Продление — в любой момент, срок добавляется к текущему.
+        Оплата через СБП. Один тариф включает до 5 устройств. Продление добавляется к текущему сроку.
       </p>
     </div>
   </section>
@@ -293,7 +278,7 @@
             Сколько устройств можно подключить?
             <span class="text-blue-600 group-open:rotate-45 transition">+</span>
           </summary>
-          <p class="text-slate-600 mt-3 leading-relaxed">Один ключ рассчитан на одно устройство. Если нужно больше — напишите в поддержку, подскажем как.</p>
+          <p class="text-slate-600 mt-3 leading-relaxed">В один аккаунт входит до 5 устройств. Для каждого создаётся отдельный ключ, а доплачивать за устройства не нужно.</p>
         </details>
 
         <details class="p-4 rounded-2xl border border-slate-200 group">
@@ -360,6 +345,8 @@
     var usernameInput = document.getElementById("siteUsername");
     var passwordInput = document.getElementById("sitePassword");
     var passwordBlock = document.getElementById("sitePasswordBlock");
+    var deviceNameInput = document.getElementById("deviceName");
+    var deviceNameBlock = document.getElementById("deviceNameBlock");
     var usernameHint = document.getElementById("siteUsernameHint");
     var submitButton = document.getElementById("registrationSubmit");
     var readiness = document.getElementById("registrationReadiness");
@@ -368,31 +355,11 @@
     var accountUsername = "";
     var checkedUsername = "";
     var selectedMonths = "";
-    var selectedPlatform = "";
+    var hasDevices = false;
     var isSubmitting = false;
     var timer = 0;
     var pendingCheck = null;
     var observedUsername = "";
-
-    var PLATFORM_APPS = {
-      ios:     { name: "DefaultVPN", url: "https://apps.apple.com/app/defaultvpn/id6744725017" },
-      android: { name: "AmneziaWG", url: "https://play.google.com/store/apps/details?id=org.amnezia.awg" },
-      windows: { name: "AmneziaWG", url: "https://github.com/amnezia-vpn/amneziawg-windows-client/releases/download/3.1.0/amneziawg-amd64-3.1.0.msi" },
-      macos:   { name: "AmneziaWG", url: "https://apps.apple.com/app/amneziawg/id6478942365" },
-      linux:   { name: "AmneziaVPN", url: "https://github.com/amnezia-vpn/amnezia-client/releases/latest" }
-    };
-
-    var PLATFORM_STEPS = {
-      ios: ["Установите DefaultVPN", "После оплаты скопируйте ключ из кабинета", "В приложении нажмите + → «Вставить» → «Добавить» → «Подключить»"],
-      android: ["Установите AmneziaWG", "После оплаты скачайте файл настроек из кабинета", "Откройте файл в AmneziaWG, подтвердите импорт и включите туннель"],
-      windows: ["Скачайте и установите AmneziaWG", "Сохраните файл настроек из кабинета", "Выберите «Import tunnel(s) from file», укажите файл и нажмите «Connect»"],
-      macos: ["Установите AmneziaWG", "Сохраните файл настроек из кабинета", "Выберите «Import tunnel(s) from file», укажите файл и нажмите «Connect»"],
-      linux: ["Скачайте AmneziaVPN и запустите установщик .run", "Добавьте подключение файлом или ключом из кабинета", "Нажмите «Подключить»"]
-    };
-
-    var PLATFORM_NOTES = {
-      linux: "Не отключайте IPv6 в системе — иначе кнопка подключения может не работать."
-    };
 
     function normalizeUsername(value) {
       return String(value || "").trim().toLowerCase();
@@ -436,30 +403,11 @@
       var missing = [];
       if (!username || checkedUsername !== username) missing.push("свободное имя");
       if (!token && passwordInput.value.length < 8) missing.push("пароль");
+      if (!hasDevices && !deviceNameInput.value.trim()) missing.push("название подключения");
       if (!selectedMonths) missing.push("тариф");
-      if (!selectedPlatform) missing.push("устройство");
       submitButton.disabled = isSubmitting || missing.length > 0;
       readiness.textContent = missing.length ? "Осталось заполнить: " + missing.join(", ") : "Всё готово — можно перейти к оплате";
       readiness.className = "text-xs text-center mt-3 " + (missing.length ? "text-slate-500" : "text-green-700 font-semibold");
-    }
-
-    function renderPlatformHelp(platform) {
-      var app = PLATFORM_APPS[platform];
-      var steps = PLATFORM_STEPS[platform];
-      if (!app || !steps) return;
-      document.getElementById("registrationAppName").textContent = "Приложение: " + app.name;
-      document.getElementById("registrationAppSteps").innerHTML = steps.map(function (step) {
-        var item = document.createElement("li");
-        item.textContent = step;
-        return item.outerHTML;
-      }).join("");
-      var link = document.getElementById("registrationAppLink");
-      link.href = app.url;
-      link.textContent = "Установить " + app.name;
-      var note = document.getElementById("registrationAppNote");
-      note.textContent = PLATFORM_NOTES[platform] || "";
-      note.classList.toggle("hidden", !PLATFORM_NOTES[platform]);
-      document.getElementById("registrationPlatformHelp").classList.remove("hidden");
     }
 
     async function checkUsername(value) {
@@ -514,6 +462,7 @@
     usernameInput.addEventListener("blur", syncUsernameField);
     passwordInput.addEventListener("input", updateSubmit);
     passwordInput.addEventListener("change", updateSubmit);
+    deviceNameInput.addEventListener("input", updateSubmit);
 
     function selectChoice(containerId, attribute, value) {
       var container = document.getElementById(containerId);
@@ -523,10 +472,6 @@
         button.setAttribute("aria-pressed", button.getAttribute(attribute) === value ? "true" : "false");
       });
       if (attribute === "data-months") selectedMonths = value;
-      if (attribute === "data-platform") {
-        selectedPlatform = value;
-        renderPlatformHelp(value);
-      }
       updateSubmit();
     }
 
@@ -535,10 +480,6 @@
       if (button) selectChoice("registrationTariffs", "data-months", button.getAttribute("data-months"));
     });
 
-    document.getElementById("registrationPlatforms").addEventListener("click", function (event) {
-      var button = event.target.closest("[data-platform]");
-      if (button) selectChoice("registrationPlatforms", "data-platform", button.getAttribute("data-platform"));
-    });
 
     document.querySelectorAll("[data-registration-months]").forEach(function (link) {
       link.addEventListener("click", function () {
@@ -557,6 +498,8 @@
         observedUsername = accountUsername;
         usernameInput.readOnly = true;
         passwordBlock.classList.add("hidden");
+        hasDevices = Boolean((data.account.devices || []).length);
+        deviceNameBlock.classList.toggle("hidden", hasDevices);
         localStorage.setItem(NAME_KEY, accountUsername);
         setHint("Это ваше имя", "success");
         updateSubmit();
@@ -593,14 +536,14 @@
         passwordInput.focus();
         return;
       }
+      if (!hasDevices && !deviceNameInput.value.trim()) {
+        showMessage("Введите название первого подключения", "error");
+        deviceNameInput.focus();
+        return;
+      }
       if (!selectedMonths) {
         showMessage("Выберите тариф", "error");
         document.getElementById("registrationTariffs").scrollIntoView({ behavior: "smooth", block: "center" });
-        return;
-      }
-      if (!selectedPlatform) {
-        showMessage("Выберите устройство", "error");
-        document.getElementById("registrationPlatforms").scrollIntoView({ behavior: "smooth", block: "center" });
         return;
       }
       isSubmitting = true;
@@ -618,11 +561,11 @@
           localStorage.setItem(TOKEN_KEY, token);
         }
         localStorage.setItem(NAME_KEY, accountUsername);
-        localStorage.setItem("topvpn_onboarding", JSON.stringify({ username: accountUsername, months: selectedMonths, platform: selectedPlatform }));
+        localStorage.setItem("topvpn_onboarding", JSON.stringify({ username: accountUsername, months: selectedMonths, deviceName: deviceNameInput.value.trim() }));
         var payment = await request("/payments", {
           method: "POST",
           headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
-          body: JSON.stringify({ months: Number(selectedMonths), platform: selectedPlatform })
+          body: JSON.stringify({ months: Number(selectedMonths), deviceName: deviceNameInput.value.trim() })
         });
         if (!payment.payUrl) throw new Error("missing_pay_url");
         window.location.assign(payment.payUrl);
