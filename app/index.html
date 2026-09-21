@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>TopVPN</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script id="telegramWebAppSdk" async src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
   :root{
     --blue-1:#0ea5e9; --blue-2:#2563eb; --blue-3:#1e40af;
@@ -112,8 +112,14 @@
 
 <script>
 (function(){
-  var tg = window.Telegram && window.Telegram.WebApp;
-  if (tg) { try { tg.ready(); tg.expand(); } catch(e){} }
+  var tg = null;
+  function initTelegram(){
+    tg = window.Telegram && window.Telegram.WebApp;
+    if (tg) { try { tg.ready(); tg.expand(); } catch(e){} }
+  }
+  initTelegram();
+  var telegramSdk = document.getElementById("telegramWebAppSdk");
+  if (telegramSdk) telegramSdk.addEventListener("load", initTelegram);
 
   var APPS = {
     ios:     {name:"DefaultVPN",  url:"https://apps.apple.com/app/defaultvpn/id6744725017"},
