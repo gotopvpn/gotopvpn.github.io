@@ -57,9 +57,9 @@
     <div class="container mx-auto max-w-4xl">
       <div class="bg-white rounded-[32px] border border-slate-200 shadow-xl shadow-blue-900/5 p-6 md:p-9">
         <div class="mb-7">
-          <div class="text-sm font-extrabold uppercase tracking-widest text-blue-600 mb-2">Регистрация</div>
-          <h2 class="text-3xl font-extrabold mb-3">Создайте подключение</h2>
-          <p class="text-slate-500">Придумайте имя аккаунта, назовите первое подключение и выберите срок.</p>
+          <div id="registrationEyebrow" class="text-sm font-extrabold uppercase tracking-widest text-blue-600 mb-2">Регистрация</div>
+          <h2 id="registrationTitle" class="text-3xl font-extrabold mb-3">Создайте подключение</h2>
+          <p id="registrationLead" class="text-slate-500">Придумайте имя аккаунта, назовите первое подключение и выберите срок.</p>
         </div>
 
         <form id="registrationForm" novalidate>
@@ -506,6 +506,11 @@
         passwordBlock.classList.add("hidden");
         hasDevices = Boolean((data.account.devices || []).length);
         deviceNameBlock.classList.toggle("hidden", hasDevices);
+        document.getElementById("registrationEyebrow").textContent = hasDevices ? "Продление" : "Подключение";
+        document.getElementById("registrationTitle").textContent = hasDevices ? "Продлите подписку" : "Завершите подключение";
+        document.getElementById("registrationLead").textContent = hasDevices
+          ? "Вы вошли как @" + accountUsername + ". Пароль и название первого подключения уже сохранены. Новые устройства добавляются бесплатно в кабинете."
+          : "Вы вошли как @" + accountUsername + ". Назовите первое подключение и выберите срок.";
         localStorage.setItem(NAME_KEY, accountUsername);
         setHint("Это ваше имя", "success");
         updateSubmit();
