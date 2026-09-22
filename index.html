@@ -95,16 +95,19 @@
             <legend class="font-bold mb-3">Тариф</legend>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="registrationTariffs">
               <button type="button" class="onboarding-choice rounded-2xl border-2 border-slate-200 p-4 text-left" data-months="1">
-                <span class="block text-sm text-slate-500">1 месяц</span><strong class="text-xl">500 ₽</strong>
+                <span class="block text-sm text-slate-500">1 месяц</span><strong class="text-xl">300 ₽</strong>
               </button>
-              <button type="button" class="onboarding-choice rounded-2xl border-2 border-slate-200 p-4 text-left" data-months="3">
-                <span class="block text-sm text-slate-500">3 месяца</span><strong class="text-xl">1350 ₽</strong>
+              <button type="button" class="onboarding-choice relative rounded-2xl border-2 border-slate-200 p-4 text-left" data-months="3">
+                <span class="absolute -top-2 right-2 rounded-full bg-amber-300 px-2 py-0.5 text-[11px] font-extrabold text-amber-950">−6%</span>
+                <span class="block text-sm text-slate-500">3 месяца</span><strong class="text-xl">850 ₽</strong>
               </button>
-              <button type="button" class="onboarding-choice rounded-2xl border-2 border-slate-200 p-4 text-left" data-months="6">
-                <span class="block text-sm text-slate-500">6 месяцев</span><strong class="text-xl">2400 ₽</strong>
+              <button type="button" class="onboarding-choice relative rounded-2xl border-2 border-slate-200 p-4 text-left" data-months="6">
+                <span class="absolute -top-2 right-2 rounded-full bg-amber-300 px-2 py-0.5 text-[11px] font-extrabold text-amber-950">−11%</span>
+                <span class="block text-sm text-slate-500">6 месяцев</span><strong class="text-xl">1600 ₽</strong>
               </button>
-              <button type="button" class="onboarding-choice rounded-2xl border-2 border-slate-200 p-4 text-left" data-months="12">
-                <span class="block text-sm text-slate-500">12 месяцев</span><strong class="text-xl">4200 ₽</strong>
+              <button type="button" class="onboarding-choice relative rounded-2xl border-2 border-slate-200 p-4 text-left" data-months="12">
+                <span class="absolute -top-2 right-2 rounded-full bg-amber-300 px-2 py-0.5 text-[11px] font-extrabold text-amber-950">−17%</span>
+                <span class="block text-sm text-slate-500">12 месяцев</span><strong class="text-xl">3000 ₽</strong>
               </button>
             </div>
           </fieldset>
@@ -222,33 +225,36 @@
       <div class="grid md:grid-cols-4 max-w-6xl mx-auto gap-5">
         <div class="p-6 rounded-3xl border-2 border-slate-100 bg-white flex flex-col hover:border-blue-300 hover:shadow-md transition">
           <h3 class="text-sm font-bold text-slate-500 uppercase mb-2">1 месяц</h3>
-          <div class="text-4xl font-extrabold mb-1">500 ₽</div>
-          <div class="text-slate-400 mb-5">500 ₽ в месяц</div>
+          <div class="text-4xl font-extrabold mb-1">300 ₽</div>
+          <div class="text-slate-400 mb-5">300 ₽ в месяц</div>
           <a class="mt-auto w-full text-center py-3 rounded-xl border-2 border-blue-600 text-blue-600 font-bold hover:bg-blue-50 transition"
              href="#registration" data-registration-months="1">Выбрать</a>
         </div>
 
-        <div class="p-6 rounded-3xl border-2 border-slate-100 bg-white flex flex-col hover:border-blue-300 hover:shadow-md transition">
+        <div class="p-6 rounded-3xl border-2 border-slate-100 bg-white flex flex-col relative hover:border-blue-300 hover:shadow-md transition">
+          <span class="absolute -top-3 right-4 rounded-full bg-amber-300 px-3 py-1 text-xs font-extrabold text-amber-950">−6%</span>
           <h3 class="text-sm font-bold text-slate-500 uppercase mb-2">3 месяца</h3>
-          <div class="text-4xl font-extrabold mb-1">1350 ₽</div>
-          <div class="text-slate-400 mb-5">450 ₽ в месяц · −10%</div>
+          <div class="text-4xl font-extrabold mb-1">850 ₽</div>
+          <div class="text-slate-400 mb-5">≈ 283 ₽ в месяц</div>
           <a class="mt-auto w-full text-center py-3 rounded-xl border-2 border-blue-600 text-blue-600 font-bold hover:bg-blue-50 transition"
              href="#registration" data-registration-months="3">Выбрать</a>
         </div>
 
         <div class="p-6 rounded-3xl border-2 border-blue-600 bg-white flex flex-col relative shadow-lg hover:shadow-xl transition">
           <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-4 py-1 rounded-full">Популярный</span>
+          <span class="absolute -top-3 right-4 rounded-full bg-amber-300 px-3 py-1 text-xs font-extrabold text-amber-950">−11%</span>
           <h3 class="text-sm font-bold text-slate-500 uppercase mb-2">6 месяцев</h3>
-          <div class="text-4xl font-extrabold mb-1">2400 ₽</div>
-          <div class="text-slate-400 mb-5">400 ₽ в месяц · −20%</div>
+          <div class="text-4xl font-extrabold mb-1">1600 ₽</div>
+          <div class="text-slate-400 mb-5">≈ 267 ₽ в месяц</div>
           <a class="mt-auto w-full text-center py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition"
              href="#registration" data-registration-months="6">Выбрать</a>
         </div>
 
-        <div class="p-6 rounded-3xl border-2 border-slate-100 bg-white flex flex-col hover:border-blue-300 hover:shadow-md transition">
+        <div class="p-6 rounded-3xl border-2 border-slate-100 bg-white flex flex-col relative hover:border-blue-300 hover:shadow-md transition">
+          <span class="absolute -top-3 right-4 rounded-full bg-amber-300 px-3 py-1 text-xs font-extrabold text-amber-950">−17%</span>
           <h3 class="text-sm font-bold text-slate-500 uppercase mb-2">12 месяцев</h3>
-          <div class="text-4xl font-extrabold mb-1">4200 ₽</div>
-          <div class="text-slate-400 mb-5">350 ₽ в месяц · −30%</div>
+          <div class="text-4xl font-extrabold mb-1">3000 ₽</div>
+          <div class="text-slate-400 mb-5">250 ₽ в месяц</div>
           <a class="mt-auto w-full text-center py-3 rounded-xl border-2 border-blue-600 text-blue-600 font-bold hover:bg-blue-50 transition"
              href="#registration" data-registration-months="12">Выбрать</a>
         </div>
