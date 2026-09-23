@@ -72,6 +72,11 @@
     .privacy-icon { flex: 0 0 auto; font-size: 20px; }
     .account-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 28px; }
     .account-name { margin: 3px 0 4px; font-size: 30px; font-weight: 900; letter-spacing: -.035em; }
+    .setup-guide { margin-bottom: 16px; background: linear-gradient(145deg, #eff6ff, #fff); }
+    .setup-guide h2 { margin: 0 0 10px; font-size: 19px; }
+    .setup-guide ol { margin: 0; padding-left: 22px; color: #475569; font-size: 14px; line-height: 1.7; }
+    .setup-guide a { color: var(--blue-dark); font-weight: 800; }
+    .setup-apps { margin: 0 0 12px; color: var(--muted); font-size: 14px; line-height: 1.6; }
     .status { display: inline-flex; align-items: center; gap: 7px; color: var(--success); font-size: 13px; font-weight: 800; }
     .status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 4px #dcfce7; }
     .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
@@ -160,6 +165,20 @@
         </div>
         <a class="button secondary" href="/#registration">Купить или продлить</a>
       </div>
+
+      <section class="panel setup-guide" aria-labelledby="setupGuideTitle">
+        <h2 id="setupGuideTitle">Как подключиться</h2>
+        <p class="setup-apps">
+          Приложение: <a href="https://apps.apple.com/app/defaultvpn/id6744725017" target="_blank" rel="noopener">DefaultVPN для iPhone/iPad</a> ·
+          <a href="https://play.google.com/store/apps/details?id=org.amnezia.vpn" target="_blank" rel="noopener">AmneziaVPN для Android</a> ·
+          <a href="https://github.com/amnezia-vpn/amnezia-client/releases/latest" target="_blank" rel="noopener">AmneziaVPN для компьютера</a>.
+        </p>
+        <ol>
+          <li>Установите приложение для своего устройства по ссылке выше.</li>
+          <li>В карточке подключения нажмите «Скопировать ключ».</li>
+          <li>В приложении добавьте подключение по ключу, вставьте ссылку <code>vpn://</code> и нажмите «Подключить».</li>
+        </ol>
+      </section>
 
       <div class="grid">
         <div class="panel empty" id="subscriptionsPanel">
