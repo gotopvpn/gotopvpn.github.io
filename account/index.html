@@ -77,6 +77,9 @@
     .setup-guide ol { margin: 0; padding-left: 22px; color: #475569; font-size: 14px; line-height: 1.7; }
     .setup-guide a { color: var(--blue-dark); font-weight: 800; }
     .setup-apps { margin: 0 0 12px; color: var(--muted); font-size: 14px; line-height: 1.6; }
+    .setup-platforms { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 16px; }
+    .setup-platforms a { display: inline-flex; align-items: center; min-height: 36px; padding: 0 13px; border: 1px solid #bfdbfe; border-radius: 999px; background: #eff6ff; color: var(--blue-dark); font-size: 13px; font-weight: 800; text-decoration: none; transition: background .15s, transform .15s; }
+    .setup-platforms a:hover { background: #dbeafe; transform: translateY(-1px); }
     .status { display: inline-flex; align-items: center; gap: 7px; color: var(--success); font-size: 13px; font-weight: 800; }
     .status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 4px #dcfce7; }
     .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
@@ -168,11 +171,14 @@
 
       <section class="panel setup-guide" aria-labelledby="setupGuideTitle">
         <h2 id="setupGuideTitle">Как подключиться</h2>
-        <p class="setup-apps">
-          Приложение: <a href="https://apps.apple.com/app/defaultvpn/id6744725017" target="_blank" rel="noopener">DefaultVPN для iPhone/iPad</a> ·
-          <a href="https://play.google.com/store/apps/details?id=org.amnezia.vpn" target="_blank" rel="noopener">AmneziaVPN для Android</a> ·
-          <a href="https://github.com/amnezia-vpn/amnezia-client/releases/latest" target="_blank" rel="noopener">AmneziaVPN для компьютера</a>.
-        </p>
+        <p class="setup-apps">Выберите платформу, чтобы открыть страницу приложения:</p>
+        <nav class="setup-platforms" aria-label="Скачать приложение для платформы">
+          <a href="https://apps.apple.com/app/defaultvpn/id6744725017" target="_blank" rel="noopener">iPhone / iPad</a>
+          <a href="https://play.google.com/store/apps/details?id=org.amnezia.vpn" target="_blank" rel="noopener">Android</a>
+          <a href="https://github.com/amnezia-vpn/amnezia-client/releases/latest" target="_blank" rel="noopener">Windows</a>
+          <a href="https://github.com/amnezia-vpn/amnezia-client/releases/latest" target="_blank" rel="noopener">macOS</a>
+          <a href="https://github.com/amnezia-vpn/amnezia-client/releases/latest" target="_blank" rel="noopener">Linux</a>
+        </nav>
         <ol>
           <li>Установите приложение для своего устройства по ссылке выше.</li>
           <li>В карточке подключения нажмите «Скопировать ключ».</li>
