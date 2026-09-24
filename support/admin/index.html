@@ -95,14 +95,14 @@
       }
 
       function renderTicket(ticket) {
-        return '<article class="ticket rounded-2xl border border-slate-200 bg-white p-4" data-id="' + escape(ticket.id) + '">' +
-          '<div class="flex flex-wrap items-center justify-between gap-3"><button type="button" class="ticket-toggle text-left font-bold hover:text-blue-700" aria-expanded="false">' +
-          '<span class="mr-2 text-xs font-bold text-blue-600">№ ' + escape(ticket.id) + '</span>' + escape(ticket.subject) + '</button>' +
-          '<span class="text-sm text-slate-500">Обновлено ' + escape(date(ticket.updatedAt)) + '</span></div>' +
-          '<div class="ticket-body mt-4 hidden space-y-3 border-t border-slate-100 pt-4">' +
+        return '<article class="ticket rounded-2xl border border-slate-200 bg-white p-3" data-id="' + escape(ticket.id) + '">' +
+          '<div class="flex flex-wrap items-start justify-between gap-3"><details class="min-w-0 flex-1"><summary class="cursor-pointer font-bold hover:text-blue-700">' +
+          '<span class="mr-2 text-xs font-bold text-blue-600">№ ' + escape(ticket.id) + '</span>' + escape(ticket.subject) +
+          '<span class="ml-2 text-xs font-normal text-slate-500">Обновлено ' + escape(date(ticket.updatedAt)) + '</span></summary>' +
+          '<div class="mt-4 space-y-3 border-t border-slate-100 pt-4">' +
           '<div class="space-y-2">' + ticket.messages.map(renderMessage).join("") + '</div>' +
           '<form class="reply flex gap-2"><input required maxlength="5000" class="min-w-0 flex-1 rounded-xl border-2 px-3" placeholder="Ответ пользователю">' +
-          '<button class="rounded-xl bg-blue-600 px-5 py-2 font-bold text-white">Ответить</button></form></div></article>';
+          '<button class="rounded-xl bg-blue-600 px-5 py-2 font-bold text-white">Ответить</button></form></div></details>' + renderStatusSelect(ticket) + '</div></article>';
       }
 
       function renderStatusSelect(ticket) {
@@ -129,7 +129,8 @@
           var count = group.tickets.length;
           var countLabel = count === 1 ? "обращение" : count % 10 >= 2 && count % 10 <= 4 && (count % 100 < 12 || count % 100 > 14) ? "обращения" : "обращений";
           var topics = group.tickets.map(function (ticket) {
-            return '<span class="inline-flex max-w-full items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-2 py-1"><span class="max-w-56 truncate text-sm" title="' + escape(ticket.subject) + '">' + escape(ticket.subject) + '</span>' + renderStatusSelect(ticket) + '</span>';
+            var status = ticket.status === "answered" ? "Отвечено" : ticket.status === "closed" ? "Закрыто" : "Открыто";
+            return '<span class="max-w-full truncate rounded-xl bg-slate-50 px-2 py-1 text-sm" title="' + escape(ticket.subject) + '">' + escape(ticket.subject) + ' <span class="text-slate-500">· ' + status + '</span></span>';
           }).join("");
           return '<section class="user-group rounded-3xl bg-white p-4 shadow-sm"><div class="flex flex-wrap items-start justify-between gap-3">' +
             '<button type="button" class="group-toggle text-left" aria-expanded="false"><span>' + info + '</span><span class="ml-2 inline-block rounded-full bg-slate-100 px-3 py-1 text-sm font-bold">' + count + " " + countLabel + '</span></button>' +
@@ -141,13 +142,6 @@
         box.querySelectorAll(".group-toggle").forEach(function (button) {
           button.addEventListener("click", function () {
             var content = button.closest(".user-group").querySelector(".group-content");
-            content.classList.toggle("hidden");
-            button.setAttribute("aria-expanded", String(!content.classList.contains("hidden")));
-          });
-        });
-        box.querySelectorAll(".ticket-toggle").forEach(function (button) {
-          button.addEventListener("click", function () {
-            var content = button.closest(".ticket").querySelector(".ticket-body");
             content.classList.toggle("hidden");
             button.setAttribute("aria-expanded", String(!content.classList.contains("hidden")));
           });
