@@ -154,6 +154,19 @@
         <div class="hint" id="usernameHint">Введите данные, которые указали перед оплатой</div>
         <button class="button wide" id="createButton" type="submit">Войти</button>
       </form>
+      <button class="button ghost" id="showResetRequest" type="button">Забыли пароль?</button>
+      <form class="inline-form hidden" id="resetRequestForm">
+        <label class="field-label" for="resetUsername">Имя аккаунта</label>
+        <input id="resetUsername" autocomplete="username" required placeholder="username" />
+        <p class="hint" id="resetRequestHint">Ссылка придёт на подтверждённый адрес email.</p>
+        <button class="button wide" id="sendResetButton" type="submit">Отправить ссылку</button>
+      </form>
+      <form class="inline-form hidden" id="resetPasswordForm">
+        <label class="field-label" for="resetNewPassword">Новый пароль</label>
+        <input id="resetNewPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required placeholder="Не менее 8 символов" />
+        <input id="resetConfirmPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required placeholder="Повторите пароль" />
+        <button class="button wide" id="confirmResetButton" type="submit">Сохранить новый пароль</button>
+      </form>
       <div class="privacy">
         <span class="privacy-icon">🔐</span>
         <div><strong>Ещё нет кабинета?</strong> <a href="/#registration">Создайте его на главной странице</a> и выберите тариф.</div>
@@ -184,6 +197,19 @@
           <li>В карточке подключения нажмите «Скопировать ключ».</li>
           <li>В приложении добавьте подключение по ключу, вставьте ссылку <code>vpn://</code> и нажмите «Подключить».</li>
         </ol>
+      </section>
+
+      <section class="panel" aria-labelledby="emailTitle">
+        <h2 id="emailTitle">Уведомления по email</h2>
+        <p id="emailStatus">Добавьте и подтвердите адрес, чтобы получать ответы поддержки и напоминания о подписке.</p>
+        <form class="inline-form" id="emailForm">
+          <input id="accountEmail" type="email" maxlength="254" autocomplete="email" placeholder="name@example.com" required />
+          <button class="button secondary" id="sendEmailCodeButton" type="submit">Отправить код</button>
+        </form>
+        <form class="inline-form hidden" id="emailVerifyForm">
+          <input id="emailVerificationCode" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{8}" maxlength="8" placeholder="Код из письма" required />
+          <button class="button" id="confirmEmailButton" type="submit">Подтвердить email</button>
+        </form>
       </section>
 
       <div class="grid">
@@ -231,6 +257,7 @@
     var passwordInput = document.getElementById("password");
     var usernameHint = document.getElementById("usernameHint");
     var loginButton = document.getElementById("createButton");
+    var resetToken = new URLSearchParams(location.search).get("reset") || "";
 
     function normalizeUsername(value) { return String(value || "").trim().toLowerCase(); }
     function setView(view) {
@@ -265,8 +292,19 @@
       document.getElementById("pageTitle").textContent = "Ваш TopVPN";
       document.getElementById("pageLead").textContent = "Управляйте подключениями и подпиской в одном месте.";
       document.getElementById("accountName").textContent = "@" + account.username;
+      renderEmail(account);
       renderDevices(account);
       setView("account");
+    }
+    function renderEmail(account) {
+      var status = document.getElementById("emailStatus");
+      var address = document.getElementById("accountEmail");
+      var verify = document.getElementById("emailVerifyForm");
+      address.value = account.pendingEmail || account.email || "";
+      verify.classList.toggle("hidden", !account.pendingEmail);
+      if (account.pendingEmail) status.textContent = "Код отправлен на " + account.pendingEmail + ". Введите его ниже; он действует 30 минут.";
+      else if (account.emailVerified) status.textContent = "Адрес " + account.email + " подтверждён. На него будут приходить ответы поддержки и напоминания о подписке.";
+      else status.textContent = "Добавьте и подтвердите адрес, чтобы получать ответы поддержки и напоминания о подписке.";
     }
     function renderDevices(account) {
       var panel = document.getElementById("subscriptionsPanel");
@@ -403,6 +441,38 @@
         loginButton.textContent = "Войти";
       }
     });
+    document.getElementById("showResetRequest").addEventListener("click", function () {
+      document.getElementById("registerForm").classList.add("hidden");
+      document.querySelector("#registerView .privacy").classList.add("hidden");
+      document.getElementById("showResetRequest").classList.add("hidden");
+      document.getElementById("resetRequestForm").classList.remove("hidden");
+    });
+    document.getElementById("resetRequestForm").addEventListener("submit", async function (event) {
+      event.preventDefault();
+      var button = document.getElementById("sendResetButton"); button.disabled = true;
+      try {
+        var data = await request("/account/password/reset", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:normalizeUsername(document.getElementById("resetUsername").value)})});
+        document.getElementById("resetRequestHint").textContent = data.message || "Если аккаунт с подтверждённой почтой существует, письмо отправлено.";
+      } catch (error) { document.getElementById("resetRequestHint").textContent = error.message || "Не удалось отправить письмо."; }
+      finally { button.disabled = false; }
+    });
+    document.getElementById("resetPasswordForm").addEventListener("submit", async function (event) {
+      event.preventDefault();
+      var password = document.getElementById("resetNewPassword").value;
+      if (password !== document.getElementById("resetConfirmPassword").value) { toast("Пароли не совпадают"); return; }
+      var button = document.getElementById("confirmResetButton"); button.disabled = true;
+      try {
+        var data = await request("/account/password/reset/confirm", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token:resetToken,newPassword:password})});
+        localStorage.removeItem(TOKEN_KEY); token = ""; resetToken = "";
+        history.replaceState(null,"","/account/");
+        document.getElementById("resetPasswordForm").classList.add("hidden");
+        document.getElementById("registerForm").classList.remove("hidden");
+        document.getElementById("showResetRequest").classList.remove("hidden");
+        document.querySelector("#registerView .privacy").classList.remove("hidden");
+        setHint(data.message || "Пароль изменён. Войдите с новым паролем", "success");
+      } catch (error) { toast(error.message || "Ссылка недействительна или истекла"); }
+      finally { button.disabled = false; }
+    });
     async function checkReturnedPayment() {
       var params = new URLSearchParams(window.location.search);
       var paymentId = params.get("payment");
@@ -449,13 +519,51 @@
       document.getElementById("passwordForm").classList.toggle("hidden");
     });
     document.getElementById("passwordForm").addEventListener("submit", changePassword);
+    document.getElementById("emailForm").addEventListener("submit", async function (event) {
+      event.preventDefault();
+      var button = document.getElementById("sendEmailCodeButton");
+      button.disabled = true;
+      try {
+        await request("/account/email/verification", {
+          method: "POST", headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
+          body: JSON.stringify({ email: document.getElementById("accountEmail").value.trim() })
+        });
+        var refreshed = await request("/account", { headers: { "Authorization": "Bearer " + token } });
+        renderAccount(refreshed.account);
+        toast(refreshed.account.emailVerified ? "Этот адрес уже подтверждён" : "Код отправлен на почту");
+      } catch (error) { toast(error.message || "Не удалось отправить код"); }
+      finally { button.disabled = false; }
+    });
+    document.getElementById("emailVerifyForm").addEventListener("submit", async function (event) {
+      event.preventDefault();
+      var button = document.getElementById("confirmEmailButton");
+      button.disabled = true;
+      try {
+        await request("/account/email/verification/confirm", {
+          method: "POST", headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
+          body: JSON.stringify({ code: document.getElementById("emailVerificationCode").value.trim() })
+        });
+        document.getElementById("emailVerificationCode").value = "";
+        var refreshed = await request("/account", { headers: { "Authorization": "Bearer " + token } });
+        renderAccount(refreshed.account);
+        toast("Email подтверждён");
+      } catch (error) { toast(error.message || "Не удалось подтвердить email"); }
+      finally { button.disabled = false; }
+    });
     document.getElementById("forgetButton").addEventListener("click", function () {
       localStorage.removeItem(TOKEN_KEY);
       token = "";
       history.replaceState(null, "", "/account/");
       window.location.reload();
     });
-    token = localStorage.getItem(TOKEN_KEY) || "";
+    if (resetToken) {
+      localStorage.removeItem(TOKEN_KEY); token = ""; setView("register");
+      document.getElementById("registerForm").classList.add("hidden");
+      document.getElementById("showResetRequest").classList.add("hidden");
+      document.querySelector("#registerView .privacy").classList.add("hidden");
+      document.getElementById("resetPasswordForm").classList.remove("hidden");
+    }
+    token = resetToken ? "" : (localStorage.getItem(TOKEN_KEY) || "");
     if (token) loadAccount(); else setView("register");
   })();
   </script>
