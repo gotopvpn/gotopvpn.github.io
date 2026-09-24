@@ -199,19 +199,6 @@
         </ol>
       </section>
 
-      <section class="panel" aria-labelledby="emailTitle">
-        <h2 id="emailTitle">Уведомления по email</h2>
-        <p id="emailStatus">Добавьте и подтвердите адрес, чтобы получать ответы поддержки и напоминания о подписке.</p>
-        <form class="inline-form" id="emailForm">
-          <input id="accountEmail" type="email" maxlength="254" autocomplete="email" placeholder="name@example.com" required />
-          <button class="button secondary" id="sendEmailCodeButton" type="submit">Отправить код</button>
-        </form>
-        <form class="inline-form hidden" id="emailVerifyForm">
-          <input id="emailVerificationCode" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{8}" maxlength="8" placeholder="Код из письма" required />
-          <button class="button" id="confirmEmailButton" type="submit">Подтвердить email</button>
-        </form>
-      </section>
-
       <div class="grid">
         <div class="panel empty" id="subscriptionsPanel">
           <div class="empty-icon">🛡️</div>
@@ -229,10 +216,18 @@
             <button class="button" id="savePasswordButton" type="submit">Сохранить пароль</button>
           </form>
         </div>
-        <div class="panel">
-          <h2>Доступ к кабинету</h2>
-          <p>Для входа с другого устройства используйте имя аккаунта и пароль.</p>
-        </div>
+        <section class="panel" aria-labelledby="emailTitle">
+          <h2 id="emailTitle">Уведомления по email</h2>
+          <p id="emailStatus">Добавьте и подтвердите адрес, чтобы получать ответы поддержки и напоминания о подписке.</p>
+          <form class="inline-form" id="emailForm">
+            <input id="accountEmail" type="email" maxlength="254" autocomplete="email" placeholder="name@example.com" required />
+            <button class="button secondary" id="sendEmailCodeButton" type="submit">Отправить код</button>
+          </form>
+          <form class="inline-form hidden" id="emailVerifyForm">
+            <input id="emailVerificationCode" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{8}" maxlength="8" placeholder="Код из письма" required />
+            <button class="button" id="confirmEmailButton" type="submit">Подтвердить email</button>
+          </form>
+        </section>
       </div>
 
       <div class="actions">
