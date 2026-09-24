@@ -1,1 +1,216 @@
-<!doctype html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Обращения TopVPN</title><script src="https://cdn.tailwindcss.com"></script></head><body class="min-h-screen bg-slate-100"><main class="max-w-6xl mx-auto px-5 py-8"><h1 class="text-3xl font-extrabold mb-6">Поддержка TopVPN</h1><form id="login" class="max-w-md bg-white rounded-3xl p-6 space-y-3"><p class="font-bold">Ключ администратора</p><input id="key" type="password" required class="w-full h-12 rounded-xl border-2 px-3"><button class="w-full h-12 rounded-xl bg-blue-600 text-white font-bold">Открыть</button><div id="error" class="text-red-600"></div></form><section id="work" class="hidden"><button id="exit" class="mb-4 font-bold text-blue-700">Закрыть доступ</button><div id="tickets" class="space-y-4"></div></section></main><script>(function(){var API = location.hostname === "gotopvpn.github.io" ? "https://topvpn.site/api/account/v1" : "/api/account/v1",K='topvpn_support_admin',t=sessionStorage.getItem(K)||'',box=document.getElementById('tickets');function e(v){var n=document.createElement('div');n.textContent=v||'';return n.innerHTML}async function q(p,o){o=o||{};o.headers=Object.assign({},o.headers||{},{Authorization:'Bearer '+t});var r=await fetch(API+p,o),j=await r.json().catch(function(){return{}});if(!r.ok)throw Error(j.error||'Ошибка');return j}function render(a){box.innerHTML=a.length?a.map(function(x){return '<article data-id="'+x.id+'" class="bg-white rounded-3xl p-6"><div class="flex justify-between"><div><div class="text-xs font-bold text-blue-600">№ '+x.id+' · '+e(x.displayName)+(x.email?' · '+e(x.email):'')+'</div><h2 class="text-xl font-extrabold">'+e(x.subject)+'</h2></div><select class="status border rounded-xl px-3"><option value="open" '+(x.status==='open'?'selected':'')+'>Открыто</option><option value="answered" '+(x.status==='answered'?'selected':'')+'>Отвечено</option><option value="closed" '+(x.status==='closed'?'selected':'')+'>Закрыто</option></select></div><div class="space-y-2 my-4">'+x.messages.map(function(m){return '<div class="rounded-2xl p-3 '+(m.author==='support'?'bg-blue-50 ml-6':'bg-slate-100 mr-6')+'"><b>'+(m.author==='support'?'Поддержка':'Пользователь')+'</b><div class="whitespace-pre-wrap">'+e(m.body)+'</div></div>'}).join('')+'</div><form class="reply flex gap-2"><input required maxlength="5000" class="flex-1 h-11 border-2 rounded-xl px-3" placeholder="Ответ"><button class="bg-blue-600 text-white font-bold rounded-xl px-5">Ответить</button></form></article>'}).join(''):'<div>Обращений нет.</div>';document.querySelectorAll('.reply').forEach(function(f){f.onsubmit=reply});document.querySelectorAll('.status').forEach(function(s){s.onchange=status})}async function load(){render((await q('/admin/support/tickets')).tickets)}async function reply(z){z.preventDefault();var a=z.target.closest('article'),i=z.target.querySelector('input');await q('/admin/support/tickets/'+a.dataset.id+'/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:i.value})});load()}async function status(z){var a=z.target.closest('article');await q('/admin/support/tickets/'+a.dataset.id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:z.target.value})})}function show(){login.classList.add('hidden');work.classList.remove('hidden')}login.onsubmit=async function(z){z.preventDefault();t=key.value.trim();try{await load();sessionStorage.setItem(K,t);show()}catch(_){error.textContent='Ключ не подошёл'}};exit.onclick=function(){sessionStorage.removeItem(K);location.reload()};if(t){show();load().catch(function(){sessionStorage.removeItem(K);location.reload()})}})();</script></body></html>
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Обращения TopVPN</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-900">
+  <main class="mx-auto max-w-6xl px-4 py-7 sm:px-6">
+    <h1 class="mb-6 text-3xl font-extrabold">Поддержка TopVPN</h1>
+
+    <form id="login" class="max-w-md space-y-3 rounded-3xl bg-white p-6 shadow-sm">
+      <p class="font-bold">Ключ администратора</p>
+      <input id="key" type="password" required autocomplete="current-password" class="h-12 w-full rounded-xl border-2 px-3">
+      <button class="h-12 w-full rounded-xl bg-blue-600 font-bold text-white">Открыть</button>
+      <div id="loginError" class="text-red-600" role="alert"></div>
+    </form>
+
+    <section id="work" class="hidden">
+      <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex gap-2" role="tablist" aria-label="Обращения">
+          <button id="activeTab" class="rounded-xl bg-blue-600 px-4 py-2 font-bold text-white" role="tab" aria-selected="true">Активные</button>
+          <button id="archiveTab" class="rounded-xl bg-white px-4 py-2 font-bold text-slate-700" role="tab" aria-selected="false">Архив</button>
+        </div>
+        <div class="flex items-center gap-4">
+          <span id="updated" class="text-sm text-slate-500" aria-live="polite"></span>
+          <button id="refresh" class="font-bold text-blue-700">Обновить</button>
+          <button id="exit" class="font-bold text-slate-600">Закрыть доступ</button>
+        </div>
+      </div>
+      <div id="notice" class="mb-4 hidden rounded-xl p-3 text-sm" role="alert"></div>
+      <div id="tickets" class="space-y-3"></div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      "use strict";
+      var API = location.hostname === "gotopvpn.github.io" ? "https://topvpn.site/api/account/v1" : "/api/account/v1";
+      var KEY = "topvpn_support_admin";
+      var token = sessionStorage.getItem(KEY) || "";
+      var login = document.getElementById("login");
+      var work = document.getElementById("work");
+      var box = document.getElementById("tickets");
+      var notice = document.getElementById("notice");
+      var tickets = [];
+      var view = "active";
+
+      function escape(value) {
+        var node = document.createElement("div");
+        node.textContent = value == null ? "" : String(value);
+        return node.innerHTML;
+      }
+
+      function date(value) {
+        return new Date(Number(value) * 1000).toLocaleString("ru-RU", { dateStyle: "medium", timeStyle: "short" });
+      }
+
+      async function request(path, options) {
+        options = options || {};
+        options.headers = Object.assign({}, options.headers || {}, { Authorization: "Bearer " + token });
+        var response = await fetch(API + path, options);
+        var data = await response.json().catch(function () { return {}; });
+        if (!response.ok) throw new Error(data.message || data.error || "Не удалось выполнить запрос");
+        return data;
+      }
+
+      function identityKey(ticket) {
+        if (ticket.accountId) return "account:" + ticket.accountId;
+        if (ticket.email) return "email:" + ticket.email.trim().toLowerCase();
+        return "ticket:" + ticket.id;
+      }
+
+      function groupTickets(list) {
+        var groups = new Map();
+        list.forEach(function (ticket) {
+          var key = identityKey(ticket);
+          if (!groups.has(key)) groups.set(key, { key: key, name: ticket.displayName || "Без имени", email: ticket.email || "", accountId: ticket.accountId || "", tickets: [] });
+          var group = groups.get(key);
+          if (!group.email && ticket.email) group.email = ticket.email;
+          if (!group.accountId && ticket.accountId) group.accountId = ticket.accountId;
+          group.tickets.push(ticket);
+        });
+        return Array.from(groups.values()).sort(function (a, b) {
+          return Math.max.apply(null, b.tickets.map(function (t) { return Number(t.updatedAt) || 0; })) - Math.max.apply(null, a.tickets.map(function (t) { return Number(t.updatedAt) || 0; }));
+        });
+      }
+
+      function renderMessage(message) {
+        var isSupport = message.author === "support";
+        return '<div class="rounded-2xl p-3 ' + (isSupport ? "ml-5 bg-blue-50" : "mr-5 bg-slate-100") + '">' +
+          '<div class="mb-1 text-xs font-bold text-slate-500">' + (isSupport ? "Поддержка" : "Пользователь") + " · " + escape(date(message.createdAt)) + '</div>' +
+          '<div class="whitespace-pre-wrap break-words">' + escape(message.body) + "</div></div>";
+      }
+
+      function renderTicket(ticket) {
+        var status = ticket.status === "answered" ? "Отвечено" : ticket.status === "closed" ? "Закрыто" : "Открыто";
+        return '<details class="ticket rounded-2xl border border-slate-200 bg-white p-4" data-id="' + escape(ticket.id) + '">' +
+          '<summary class="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">' +
+          '<span><span class="mr-2 text-xs font-bold text-blue-600">№ ' + escape(ticket.id) + '</span><strong>' + escape(ticket.subject) + '</strong></span>' +
+          '<span class="flex items-center gap-3 text-sm text-slate-500"><span>' + status + '</span><span>' + escape(date(ticket.updatedAt)) + '</span></span>' +
+          '</summary><div class="mt-4 space-y-3 border-t border-slate-100 pt-4">' +
+          '<div class="space-y-2">' + ticket.messages.map(renderMessage).join("") + '</div>' +
+          '<div class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3">' +
+          '<label class="text-sm font-semibold">Статус <select class="status ml-2 rounded-lg border px-3 py-2">' +
+          '<option value="open" ' + (ticket.status === "open" ? "selected" : "") + '>Открыто</option>' +
+          '<option value="answered" ' + (ticket.status === "answered" ? "selected" : "") + '>Отвечено</option>' +
+          '<option value="closed" ' + (ticket.status === "closed" ? "selected" : "") + '>Закрыто</option>' +
+          '</select></label></div>' +
+          '<form class="reply flex gap-2"><input required maxlength="5000" class="min-w-0 flex-1 rounded-xl border-2 px-3" placeholder="Ответ пользователю">' +
+          '<button class="rounded-xl bg-blue-600 px-5 py-2 font-bold text-white">Ответить</button></form></div></details>';
+      }
+
+      function render() {
+        var visible = tickets.filter(function (ticket) { return view === "archive" ? ticket.status === "closed" : ticket.status !== "closed"; });
+        var groups = groupTickets(visible);
+        document.getElementById("activeTab").textContent = "Активные (" + tickets.filter(function (t) { return t.status !== "closed"; }).length + ")";
+        document.getElementById("archiveTab").textContent = "Архив (" + tickets.filter(function (t) { return t.status === "closed"; }).length + ")";
+        if (!groups.length) {
+          box.innerHTML = '<div class="rounded-2xl bg-white p-6 text-slate-500">' + (view === "archive" ? "В архиве пока пусто." : "Активных обращений нет.") + "</div>";
+          return;
+        }
+        box.innerHTML = groups.map(function (group) {
+          var info = '<span class="font-extrabold">' + escape(group.name) + "</span>" +
+            (group.email ? '<span class="text-slate-600"> · ' + escape(group.email) + "</span>" : "") +
+            (group.accountId ? '<span class="block text-xs font-normal text-slate-500">Аккаунт: ' + escape(group.accountId) + "</span>" : "");
+          var count = group.tickets.length;
+          var countLabel = count === 1 ? "обращение" : count % 10 >= 2 && count % 10 <= 4 && (count % 100 < 12 || count % 100 > 14) ? "обращения" : "обращений";
+          return '<details class="user-group rounded-3xl bg-white p-4 shadow-sm"><summary class="flex cursor-pointer list-none items-center justify-between gap-4">' +
+            '<span>' + info + '</span><span class="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-sm font-bold">' + count + " " + countLabel + '</span></summary>' +
+            '<div class="mt-4 space-y-3 border-t border-slate-100 pt-4">' + group.tickets.map(renderTicket).join("") + '</div></details>';
+        }).join("");
+        box.querySelectorAll(".reply").forEach(function (form) { form.addEventListener("submit", reply); });
+        box.querySelectorAll(".status").forEach(function (select) { select.addEventListener("change", changeStatus); });
+      }
+
+      function showError(error) {
+        notice.textContent = error.message || "Не удалось загрузить обращения";
+        notice.className = "mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700";
+      }
+
+      async function load() {
+        try {
+          var data = await request("/admin/support/tickets");
+          tickets = data.tickets || [];
+          document.getElementById("updated").textContent = "Обновлено " + new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+          notice.className = "mb-4 hidden rounded-xl p-3 text-sm";
+          render();
+        } catch (error) { showError(error); }
+      }
+
+      async function reply(event) {
+        event.preventDefault();
+        var form = event.currentTarget;
+        var ticket = form.closest(".ticket");
+        var input = form.querySelector("input");
+        var button = form.querySelector("button");
+        button.disabled = true;
+        try {
+          await request("/admin/support/tickets/" + encodeURIComponent(ticket.dataset.id) + "/messages", {
+            method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: input.value.trim() })
+          });
+          await load();
+        } catch (error) { showError(error); }
+        finally { button.disabled = false; }
+      }
+
+      async function changeStatus(event) {
+        var ticket = event.currentTarget.closest(".ticket");
+        try {
+          await request("/admin/support/tickets/" + encodeURIComponent(ticket.dataset.id), {
+            method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: event.currentTarget.value })
+          });
+          await load();
+        } catch (error) { showError(error); }
+      }
+
+      function setView(next) {
+        view = next;
+        var active = next === "active";
+        document.getElementById("activeTab").className = "rounded-xl px-4 py-2 font-bold " + (active ? "bg-blue-600 text-white" : "bg-white text-slate-700");
+        document.getElementById("archiveTab").className = "rounded-xl px-4 py-2 font-bold " + (!active ? "bg-blue-600 text-white" : "bg-white text-slate-700");
+        document.getElementById("activeTab").setAttribute("aria-selected", String(active));
+        document.getElementById("archiveTab").setAttribute("aria-selected", String(!active));
+        render();
+      }
+
+      document.getElementById("activeTab").addEventListener("click", function () { setView("active"); });
+      document.getElementById("archiveTab").addEventListener("click", function () { setView("archive"); });
+      document.getElementById("refresh").addEventListener("click", load);
+      document.getElementById("exit").addEventListener("click", function () { sessionStorage.removeItem(KEY); location.reload(); });
+      login.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        token = document.getElementById("key").value.trim();
+        try {
+          var data = await request("/admin/support/tickets");
+          tickets = data.tickets || [];
+          sessionStorage.setItem(KEY, token);
+          login.classList.add("hidden");
+          work.classList.remove("hidden");
+          render();
+        } catch (_) { document.getElementById("loginError").textContent = "Ключ не подошёл"; }
+      });
+
+      if (token) {
+        login.classList.add("hidden");
+        work.classList.remove("hidden");
+        load();
+      }
+      // User replies reopen closed tickets on the API; periodic refresh moves them out of the archive.
+      window.setInterval(function () { if (token) load(); }, 60000);
+    }());
+  </script>
+</body>
+</html>
