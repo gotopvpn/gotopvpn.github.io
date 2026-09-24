@@ -219,6 +219,7 @@
         <section class="panel" aria-labelledby="emailTitle">
           <h2 id="emailTitle">Уведомления по email</h2>
           <p id="emailStatus">Добавьте и подтвердите адрес, чтобы получать ответы поддержки и напоминания о подписке.</p>
+          <button class="button secondary hidden" id="changeEmailButton" type="button">Изменить email</button>
           <form class="inline-form" id="emailForm">
             <input id="accountEmail" type="email" maxlength="254" autocomplete="email" placeholder="name@example.com" required />
             <button class="button secondary" id="sendEmailCodeButton" type="submit">Отправить код</button>
@@ -294,11 +295,16 @@
     function renderEmail(account) {
       var status = document.getElementById("emailStatus");
       var address = document.getElementById("accountEmail");
+      var form = document.getElementById("emailForm");
       var verify = document.getElementById("emailVerifyForm");
+      var changeButton = document.getElementById("changeEmailButton");
       address.value = account.pendingEmail || account.email || "";
+      form.classList.toggle("hidden", !!account.emailVerified && !account.pendingEmail);
       verify.classList.toggle("hidden", !account.pendingEmail);
+      changeButton.classList.toggle("hidden", !account.emailVerified || !!account.pendingEmail);
+      changeButton.textContent = "Изменить email";
       if (account.pendingEmail) status.textContent = "Код отправлен на " + account.pendingEmail + ". Введите его ниже; он действует 30 минут.";
-      else if (account.emailVerified) status.textContent = "Адрес " + account.email + " подтверждён. На него будут приходить ответы поддержки и напоминания о подписке.";
+      else if (account.emailVerified) status.textContent = "" + account.email + " — адрес подтверждён. На него будут приходить ответы поддержки и напоминания о подписке.";
       else status.textContent = "Добавьте и подтвердите адрес, чтобы получать ответы поддержки и напоминания о подписке.";
     }
     function renderDevices(account) {
@@ -512,6 +518,11 @@
     }
     document.getElementById("changePasswordButton").addEventListener("click", function () {
       document.getElementById("passwordForm").classList.toggle("hidden");
+    });
+    document.getElementById("changeEmailButton").addEventListener("click", function () {
+      var form = document.getElementById("emailForm");
+      var isHidden = form.classList.toggle("hidden");
+      this.textContent = isHidden ? "Изменить email" : "Скрыть форму";
     });
     document.getElementById("passwordForm").addEventListener("submit", changePassword);
     document.getElementById("emailForm").addEventListener("submit", async function (event) {
