@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Партнёрский кабинет — TopVPN</title>
+  <link rel="stylesheet" href="/partners/style.css">
+  <style>body{margin:0;background:#f1f5f9}main{max-width:1000px;margin:auto;padding:24px 16px}nav{display:flex;justify-content:space-between;gap:16px;margin-bottom:28px}nav a{color:#2563eb;font-weight:750;text-decoration:none}h1{font-size:32px;margin:0 0 8px}</style>
+</head>
+<body>
+  <main class="referral-ui">
+    <nav><a href="/">TopVPN</a><a href="/account/">Личный кабинет</a><a href="/support/">Поддержка</a></nav>
+    <h1>Партнёрский кабинет</h1>
+    <p class="muted">Ваша ссылка, промокод и начисления за приглашённых покупателей.</p>
+    <div id="partnerNotice" role="status" hidden></div>
+    <form id="partnerLogin" class="card" hidden>
+      <h2>Вход</h2>
+      <p class="muted">Используйте аккаунт TopVPN, которому выдан партнёрский доступ. Подписка VPN для входа не требуется.</p>
+      <label>Имя аккаунта<input id="partnerUsername" autocomplete="username" required maxlength="24"></label>
+      <label>Пароль<input id="partnerPassword" type="password" autocomplete="current-password" required maxlength="128"></label>
+      <button>Войти</button>
+      <a class="btn" href="/account/">Восстановить пароль</a>
+    </form>
+    <section id="partnerWork" hidden>
+      <button id="partnerRefresh">Обновить</button><button id="partnerLogout" class="secondary">Выйти</button>
+      <div id="partnerSummary"></div>
+      <form id="partnerChangePassword" class="card">
+        <h2>Смена пароля</h2>
+        <div class="grid"><label>Текущий пароль<input name="currentPassword" type="password" autocomplete="current-password" required></label><label>Новый пароль<input name="newPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required></label></div>
+        <button>Сохранить пароль</button>
+      </form>
+    </section>
+  </main>
+  <script src="/partners/common.js"></script>
+  <script src="/partners/partner.js"></script>
+</body>
+</html>
