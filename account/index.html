@@ -232,6 +232,14 @@
         </section>
       </div>
 
+      <section class="panel" id="telegram">
+        <h2>Telegram</h2>
+        <p id="telegramStatus">Привяжите Telegram, чтобы управлять этими же подключениями в боте.</p>
+        <button class="button secondary" id="linkTelegram" type="button">Привязать Telegram</button>
+        <button class="button ghost hidden" id="unlinkTelegram" type="button">Отключить привязку</button>
+        <p id="telegramLinkResult" class="hidden"></p>
+      </section>
+
       <div class="actions">
         <button class="button ghost" id="forgetButton" type="button">Выйти на этом устройстве</button>
       </div>
@@ -286,6 +294,9 @@
       return data;
     }
     function renderAccount(account) {
+      document.getElementById("telegramStatus").textContent = account.telegramId ? "Привязан Telegram ID: " + account.telegramId : "Привяжите Telegram, чтобы управлять этими же подключениями в боте.";
+      document.getElementById("linkTelegram").classList.toggle("hidden", !!account.telegramId);
+      document.getElementById("unlinkTelegram").classList.toggle("hidden", !account.telegramId);
       document.getElementById("pageTitle").textContent = "Ваш TopVPN";
       document.getElementById("pageLead").textContent = "Управляйте подключениями и подпиской в одном месте.";
       document.getElementById("accountName").textContent = "@" + account.username;
@@ -556,6 +567,25 @@
         toast("Email подтверждён");
       } catch (error) { toast(error.message || "Не удалось подтвердить email"); }
       finally { button.disabled = false; }
+    });
+    document.getElementById("linkTelegram").addEventListener("click", async function () {
+      var button = this; button.disabled = true;
+      try {
+        var data = await request("/account/telegram/link-code", {method:"POST", headers:{"Authorization":"Bearer "+token}});
+        var result = document.getElementById("telegramLinkResult");
+        result.textContent = "Ссылка действует 10 минут. Откройте её только в своём Telegram и нажмите «Запустить». Никому не пересылайте её. ";
+        var link = document.createElement("a"); link.href = data.url; link.textContent = "Открыть бота"; link.className = "button"; link.rel = "noopener";
+        result.appendChild(link); result.classList.remove("hidden");
+      } catch (error) { toast(error.message || "Не удалось создать ссылку"); }
+      finally { button.disabled = false; }
+    });
+    document.getElementById("unlinkTelegram").addEventListener("click", async function () {
+      if (!window.confirm("Отключить управление кабинетом через Telegram?")) return;
+      try {
+        await request("/account/telegram/unlink", {method:"POST", headers:{"Authorization":"Bearer "+token}});
+        document.getElementById("telegramLinkResult").classList.add("hidden");
+        await loadAccount(); toast("Привязка отключена");
+      } catch (error) { toast(error.message || "Не удалось отключить привязку"); }
     });
     document.getElementById("forgetButton").addEventListener("click", function () {
       localStorage.removeItem(TOKEN_KEY);
