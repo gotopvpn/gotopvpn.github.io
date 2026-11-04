@@ -142,6 +142,16 @@
     </section>
 
     <section class="card hidden" id="registerView">
+      <form class="inline-form hidden" id="telegramRegisterForm">
+        <p>Создайте логин и пароль для входа на сайт. Ваши подключения и подписка останутся прежними.</p>
+        <label class="field-label" for="telegramUsername">Имя аккаунта</label>
+        <input id="telegramUsername" autocomplete="username" minlength="3" maxlength="24" required placeholder="Латинские буквы, цифры и _" />
+        <label class="field-label" for="telegramPassword">Пароль</label>
+        <input id="telegramPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required placeholder="Не менее 8 символов" />
+        <input id="telegramPasswordAgain" type="password" autocomplete="new-password" minlength="8" maxlength="128" required placeholder="Повторите пароль" />
+        <p class="hint" id="telegramRegisterHint"></p>
+        <button class="button wide" type="submit">Создать вход на сайте</button>
+      </form>
       <form id="registerForm" novalidate>
         <label class="field-label" for="username">Имя аккаунта</label>
         <div class="input-wrap">
@@ -263,6 +273,8 @@
     var usernameHint = document.getElementById("usernameHint");
     var loginButton = document.getElementById("createButton");
     var resetToken = new URLSearchParams(location.search).get("reset") || "";
+    var telegramRegisterToken = new URLSearchParams(location.hash.slice(1)).get("telegram_register") || "";
+    if (telegramRegisterToken) history.replaceState(null, "", "/account/");
 
     function normalizeUsername(value) { return String(value || "").trim().toLowerCase(); }
     function setView(view) {
@@ -429,6 +441,20 @@
         setHint(error.status === 401 ? "Сессия закончилась. Войдите снова" : "Не удалось связаться с сервером", "error");
       }
     }
+    document.getElementById("telegramRegisterForm").addEventListener("submit", async function (event) {
+      event.preventDefault();
+      var username = normalizeUsername(document.getElementById("telegramUsername").value);
+      var password = document.getElementById("telegramPassword").value;
+      var hint = document.getElementById("telegramRegisterHint");
+      if (password !== document.getElementById("telegramPasswordAgain").value) { hint.textContent = "Пароли не совпадают"; return; }
+      var button = this.querySelector("button"); button.disabled = true;
+      try {
+        var data = await request("/telegram/register", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token:telegramRegisterToken,username:username,password:password})});
+        telegramRegisterToken = ""; token = data.token; localStorage.setItem(TOKEN_KEY, token);
+        this.reset(); this.classList.add("hidden"); await loadAccount(); toast("Вход на сайт создан");
+      } catch (error) { hint.textContent = error.message || "Не удалось создать вход"; }
+      finally { button.disabled = false; }
+    });
     document.getElementById("registerForm").addEventListener("submit", async function (event) {
       event.preventDefault();
       var username = normalizeUsername(usernameInput.value);
@@ -600,8 +626,16 @@
       document.querySelector("#registerView .privacy").classList.add("hidden");
       document.getElementById("resetPasswordForm").classList.remove("hidden");
     }
-    token = resetToken ? "" : (localStorage.getItem(TOKEN_KEY) || "");
-    if (token) loadAccount(); else setView("register");
+    if (telegramRegisterToken) {
+      token = ""; setView("register");
+      document.getElementById("registerForm").classList.add("hidden");
+      document.getElementById("showResetRequest").classList.add("hidden");
+      document.querySelector("#registerView .privacy").classList.add("hidden");
+      document.getElementById("telegramRegisterForm").classList.remove("hidden");
+    } else {
+      token = resetToken ? "" : (localStorage.getItem(TOKEN_KEY) || "");
+      if (token) loadAccount(); else setView("register");
+    }
   })();
   </script>
 </body>
