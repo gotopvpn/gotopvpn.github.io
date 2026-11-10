@@ -10,6 +10,7 @@
 .referral-ui input[type=checkbox] {width:auto;display:inline;min-height:0;margin-right:6px}
 .referral-ui button,.referral-ui .btn {display:inline-block;background:#2563eb;color:white;border:0;border-radius:12px;padding:11px 17px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;margin:4px 5px 4px 0}
 .referral-ui button.secondary {background:#eff6ff;color:#1d4ed8}
+.referral-ui button.danger {background:#fee2e2;color:#b91c1c}
 .referral-ui button:disabled {opacity:.5;cursor:wait}
 .referral-ui :focus-visible {outline:3px solid #93c5fd;outline-offset:2px}
 .referral-ui .notice {padding:12px;border-radius:12px;white-space:pre-wrap;background:#eff6ff;color:#1d4ed8;margin:12px 0;overflow-wrap:anywhere}
